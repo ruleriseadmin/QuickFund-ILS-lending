@@ -1,0 +1,5557 @@
+openapi: '3.0.3'
+info:
+  title: Quickfund Lending API
+  description: Documentation for Quickfund Lending API
+  version: '1.0'
+servers:
+  - url: https://lending.quickfundmfb.com
+    description: Production Environment
+  - url: http://localhost:8000
+    description: Development Environment
+paths:
+  /api/offers:
+    get:
+      tags: [Interswitch]
+      summary: Get offers
+      description: Get offers
+      parameters:
+        - name: customerId
+          description: The phone number of the customer
+          in: query
+          required: true
+          schema:
+            type: string
+            example: '2348123456789'
+        - name: amount
+          description: The requested amount (Value is in Kobo)
+          in: query
+          required: false
+          schema:
+            type: integer
+            example: 1000000
+        - name: providerCode
+          description: The provider code
+          in: query
+          required: false
+          schema:
+            type: string
+            example: QFD
+        - name: channelCode
+          description: The channel code
+          in: query
+          required: false
+          schema:
+            type: string
+            example: 'MKT'
+      responses:
+        '200':
+          description: Request successful
+        '400':
+          description: Failed to fetch customer details, Failed to get customer credit score, No offer, Outstanding loans unpaid
+        '401':
+          description: Unauthenticated
+        '422':
+          description: Validation errors
+        '500':
+          description: Server error. Report to Developer
+        '503':
+          description: Service Unavailable
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - basicAuth: []
+    post:
+      tags: [Application]
+      summary: Create an offer (requires the permissions "offers" AND "fees" for a staff)
+      description: Create an offer (requires the permissions "offers" AND "fees" for a staff)
+      requestBody:
+        description: Data for creating offer
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                amount:
+                  description: The amount of the offer (Value is in kobo)
+                  type: integer
+                  example: 2000000
+                tenure:
+                  description: The number of days of the offer
+                  type: integer
+                  example: 14
+                cycles:
+                  description: The number of cycles on the offer to graduate to higher offer
+                  type: integer
+                  example: 1
+                fees[]:
+                  description: The ID of the fees
+                  type: array
+                  items:
+                    type: integer
+                    example: 1
+                expiry_date:
+                  description: The expiry date of the offer (It should be in the format "YYYY-MM-DD")
+                  type: string
+                  format: date
+                  example: '2025-04-22'
+              required:
+                - amount
+                - tenure
+                - cycles
+            encoding:
+              fees[]:
+                style: form
+        required: true
+      responses:
+        '201':
+          description: Offer created
+        '400':
+          description: Offer already exists
+        '401':
+          description: Unauthenticated
+        '422':
+          description: Validation errors
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/login:
+    post:
+      tags: [Application]
+      summary: Login to the application
+      description: Login to the application
+      requestBody:
+        description: Data for login to the application
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                username:
+                  description: The username of the user
+                  type: string
+                  example: username
+                password:
+                  description: The password of the user
+                  type: string
+                  format: password
+                  example: password
+              required:
+                - username
+                - password
+        required: true
+      responses:
+        '200':
+          description: Login successful
+        '401':
+          description: Invalid credentials
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+  /api/logout:
+    post:
+      tags: [Application]
+      summary: Logout from the application
+      description: Logout from the application
+      responses:
+        '200':
+          description: Logout successful
+        '401':
+          description: Invalid credentials
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/account-resolution:
+    get:
+      tags: [Application]
+      summary: Resolve the details of an account
+      description: Resolve the details of an account
+      parameters:
+        - name: account_number
+          in: query
+          description: The account number
+          required: true
+          schema:
+            type: number
+            example: '0140940818'
+        - name: bank_code
+          in: query
+          description: The bank code
+          required: true
+          schema:
+            type: number
+            example: '058'
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '422':
+          description: Validation errors
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/change-password:
+    put:
+      tags: [Application]
+      summary: Change password (requires the permissions "change-password". This is enabled by default for a staff)
+      description: Change password (requires the permissions "change-password". This is enabled by default for a staff)
+      requestBody:
+        description: Data for changing password
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                current_password:
+                  description: The current password of the admin
+                  type: string
+                  format: password
+                  example: password
+                password:
+                  description: The new password of the admin
+                  type: string
+                  format: password
+                  example: newpassword
+                password_confirmation:
+                  description: The new password confirmation of the admin
+                  type: string
+                  format: password
+                  example: newpassword
+              required:
+                - current_password
+                - password
+                - password_confirmation
+        required: true
+      responses:
+        '200':
+          description: Password changed successfully
+        '422':
+          description: Validation errors
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/offers/application:
+    get:
+      tags: [Application]
+      summary: Get offers by the application (requires the permissions "offers" AND "fees" for a staff)
+      description: Get all offers by the application (requires the permissions "offers" AND "fees" for a staff)
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/offers/accept:
+    post:
+      tags: [Interswitch]
+      summary: Accept offer
+      description: Accept offer
+      requestBody:
+        description: Data for accepting offer
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                offerId:
+                  description: The ID of the offer
+                  type: string
+                  example: '1'
+                customerId:
+                  description: The phone number of the customer
+                  type: string
+                  example: '2348123456789'
+                destinationAccountNumber:
+                  description: The destination account number
+                  type: string
+                  example: '0123456789'
+                destinationBankCode:
+                  description: The destination bank code
+                  type: string
+                  example: '011'
+                token:
+                  description: The payment card token
+                  type: string
+                  example: '5123450558220138603'
+                loanReferenceId:
+                  description: Unique identifier assigned to a loan
+                  type: string
+                  example: 'XYZ123465262646469476276572726'
+              required:
+                - customerId
+                - offerId
+                - destinationAccountNumber
+                - destinationBankCode
+                - token
+                - loanReferenceId
+        required: true
+      responses:
+        '200':
+          description: Offer accepted
+        '400':
+          description: Customer not found, Offer not found, Offer expired, Offer status not "NONE", Outstanding loans unpaid, Failed to update offer status, Failed to credit customer, Failed to send SMS
+        '401':
+          description: Unauthenticated
+        '422':
+          description: Validation errors
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - basicAuth: []
+  /api/offers/{offerId}:
+    parameters:
+      - name: offerId
+        in: path
+        required: true
+        description: The ID of the offer
+        schema:
+          type: integer
+          example: 1
+    get:
+      tags: [Application]
+      summary: Get an offer (requires the permissions "offers" AND "fees" for a staff)
+      description: Get an offer (requires the permissions "offers" AND "fees" for a staff)
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '404':
+          description: Offer not found
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+    put:
+      tags: [Application]
+      summary: Update an offer (requires the permissions "offers" AND "fees" for a staff)
+      description: Update an offer (requires the permissions "offers" AND "fees" for a staff)
+      requestBody:
+        description: Data for updating offer
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                amount:
+                  description: The amount of the offer (Value is in kobo)
+                  type: integer
+                  example: 2000000
+                tenure:
+                  description: The number of days of the offer
+                  type: integer
+                  example: 14
+                cycles:
+                  description: The number of cycles on the offer to graduate to higher offer
+                  type: integer
+                  example: 1
+                fees[]:
+                  description: The fees on the loan
+                  type: array
+                  items:
+                    type: integer
+                    example: 1
+                expiry_date:
+                  description: The expiry date of the offer (It should be in the format "YYYY-MM-DD")
+                  type: string
+                  format: date
+                  example: '2025-04-22'
+              required:
+                - amount
+                - tenure
+                - cycles
+            encoding:
+              fees[]:
+                style: form
+        required: true
+      responses:
+        '200':
+          description: Offer updated
+        '400':
+          description: Offer already exists
+        '401':
+          description: Unauthenticated
+        '404':
+          description: Offer not found
+        '422':
+          description: Validation errors
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+    delete:
+      tags: [Application]
+      summary: Delete an offer (requires the permissions "offers" AND "fees" for a staff)
+      description: Delete an offer (requires the permissions "offers" AND "fees" for a staff)
+      responses:
+        '200':
+          description: Offer deleted
+        '401':
+          description: Unauthenticated
+        '404':
+          description: Offer not found
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/loans/status/{loanId}:
+    get:
+      tags: [Interswitch]
+      summary: Get loan status
+      description: Get the status of a loan
+      parameters:
+        - name: loanId
+          description: The ID of the loan
+          required: true
+          in: path
+          schema:
+            type: string
+            example: '1'
+        - name: customerId
+          description: The phone number of the customer
+          in: query
+          required: true
+          schema:
+            type: string
+            example: '2348123456789'
+        - name: channelCode
+          description: The channel code
+          in: query
+          required: true
+          schema:
+            type: string
+            example: 'MKT'
+      responses:
+        '200':
+          description: Request successful
+        '400':
+          description: Customer not found, Offer not found, No record of loan collected on offer
+        '401':
+          description: Unauthenticated
+        '422':
+          description: Validation errors
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - basicAuth: []
+  /api/loan-offers/search:
+    get:
+      tags: [Application]
+      summary: Search for loan offers with details (requires the permissions "loans" AND "loan-search" for a staff)
+      description: Search for loan offers with details (requires the permissions "loans" AND "loan-search" for a staff)
+      parameters:
+        - name: status[]
+          in: query
+          description: The status of the loan offer (Allowed values "PENDING", "ACCEPTED", "DECLINED", "FAILED", "OVERDUE", "OPEN", "CLOSED", "NONE")
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+              example: OPEN
+        - name: from_date
+          in: query
+          description: The date to search from (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-01-01'
+        - name: to_date
+          in: query
+          description: The date to search to (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-12-31'
+        - name: due_from_date
+          in: query
+          description: The due date to search from (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-03-25'
+        - name: due_to_date
+          in: query
+          description: The due date to search to (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-06-25'
+        - name: page
+          in: query
+          description: The current page
+          required: false
+          schema:
+            type: integer
+            example: 1
+        - name: per_page
+          in: query
+          description: The number of items to return per page (Default is 20)
+          required: false
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '422':
+          description: Validation errors
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/loan-offers/due-in-days:
+    get:
+      tags: [Application]
+      summary: Get the loans that are due in certain number of days (requires the permissions "loans" for a staff)
+      description: Get the loans that are due in certain number of days (requires the permissions "loans" for a staff)
+      parameters:
+        - name: days
+          description: The number of days the loan will be due
+          in: query
+          required: true
+          schema:
+            type: integer
+            example: 2
+        - name: page
+          in: query
+          description: The current page
+          required: false
+          schema:
+            type: integer
+            example: 1
+        - name: per_page
+          in: query
+          description: The number of items to return per page (Default is 20)
+          required: false
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/loan-offers/{loanOfferId}:
+    get:
+      tags: [Application]
+      summary: Get a loan offer with details (requires the permissions "loans" for a staff)
+      description: Get a loan offer with details (requires the permissions "loans" for a staff)
+      parameters:
+        - name: loanOfferId
+          description: The ID of the loan offer
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '404':
+          description: Loan offer not found
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/loan-offers/{loanOfferId}/debit:
+    post:
+      tags: [Application]
+      summary: Debit remaining loan amount from customer (requires the permissions "loans" AND "loan-debit" for a staff)
+      description: Debit remaining loan amount from customer's account (requires the permissions "loans" AND "loan-debit" for a staff)
+      parameters:
+        - name: loanOfferId
+          description: The ID of the loan offer
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Customer debited
+        '401':
+          description: Unauthenticated
+        '404':
+          description: Loan offer not found
+        '500':
+          description: Server error. Report to Developer
+        '503':
+          description: Service Unavailable
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/loan-offers/{loanOfferId}/credit:
+    post:
+      tags: [Application]
+      summary: Credit loan amount to customer (requires the permissions "loans" AND "loan-credit" for a staff)
+      description: Credit loan amount to customer's account (requires the permissions "loans" AND "loan-credit" for a staff)
+      parameters:
+        - name: loanOfferId
+          description: The ID of the loan offer
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Customer credited
+        '401':
+          description: Unauthenticated
+        '404':
+          description: Loan offer not found
+        '500':
+          description: Server error. Report to Developer
+        '503':
+          description: Service Unavailable
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/loan-offers/{loanOfferId}/status:
+    put:
+      tags: [Application]
+      summary: Update the status of a loan (requires the permissions "loans" AND "loan-status" for a staff)
+      description: Update the status of a loan (requires the permissions "loans" AND "loan-status" for a staff)
+      parameters:
+        - name: loanOfferId
+          description: The ID of the loan offer
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        description: Data for updating loan offer status
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: The status of the loan offer (Allowed values "PENDING", "ACCEPTED", "DECLINED", "FAILED", "OVERDUE", "OPEN", "CLOSED", "NONE")
+                  type: string
+                  example: OPEN
+              required:
+                - status
+        required: true
+      responses:
+        '200':
+          description: Loan status updated
+        '401':
+          description: Unauthenticated
+        '404':
+          description: Loan offer not found
+        '500':
+          description: Server error. Report to Developer
+        '503':
+          description: Service Unavailable
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/loan-offers/{loanOfferId}/transactions:
+    get:
+      tags: [Application]
+      summary: Get the transactions on a loan (requires the permissions "loans" AND "loan-transactions" for a staff)
+      description: Get the transactions on a loan (requires the permissions "loans" AND "loan-transactions" for a staff)
+      parameters:
+        - name: loanOfferId
+          description: The ID of the loan offer
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+        - name: page
+          in: query
+          description: The current page
+          required: false
+          schema:
+            type: integer
+            example: 1
+        - name: per_page
+          in: query
+          description: The number of items to return per page (Default is 20)
+          required: false
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Request successful
+        '400':
+          description: No loan collected on offer
+        '401':
+          description: Unauthenticated
+        '404':
+          description: Loan offer not found
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/loan-offers/{loanOfferId}/refund:
+    post:
+      tags: [Application]
+      summary: Refund the customer on the payment of a loan (requires the permissions "loans" AND "loan-refund" for a staff)
+      description: Refund the customer on the payment of a loan (requires the permissions "loans" AND "loan-refund" for a staff)
+      parameters:
+        - name: loanOfferId
+          description: The ID of the loan offer
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        description: Data for refunding customer
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                amount:
+                  description: The amount to be refunded to the customer's account (Value is in kobo)
+                  type: integer
+                  example: 200000
+              required:
+                - amount
+        required: true
+      responses:
+        '200':
+          description: Customer refunded
+        '401':
+          description: Unauthenticated
+        '404':
+          description: Loan offer not found
+        '500':
+          description: Server error. Report to Developer
+        '503':
+          description: Service Unavailable
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/loan-offers/{loanOfferId}/sms-choice:
+    post:
+      tags: [Application]
+      summary: Send the different kinds of SMS by the application (requires the permissions "loans" AND "loan-sms-choice" for a staff)
+      description: Send the different kinds of SMS by the application (requires the permissions "loans" AND "loan-sms-choice" for a staff)
+      parameters:
+        - name: loanOfferId
+          description: The ID of the loan offer
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        description: Data for sending SMS choices
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                choice:
+                  description: The SMS choice
+                  type: string
+                  enum:
+                    - duplicate_loan_message
+                    - insufficient_funds_collection_message
+                    - disbursement_message
+                    - debt_warning_days_3_message
+                    - debt_warning_days_1_message
+                    - insufficient_funds_message
+                    - no_debts_at_hand_message
+                    - loan_partially_collected_message
+                    - loan_fully_collected_message
+                    - late_fee_partially_collected_message
+                    - late_fee_fully_collected_message
+                    - loan_with_late_fee_partially_collected_message
+                    - loan_with_late_fee_fully_collected_message
+                    - debt_overdue_message
+                    - debt_overdue_first_week_message
+                    - debt_overdue_second_week_message
+                    - debt_overdue_third_week_message
+                    - debt_overdue_fourth_week_message
+                    - has_no_debt_message
+                    - has_debt_without_penalty_message
+                    - has_debt_with_penalty_message
+                    - blacklist_scoring_message
+                    - failed_disbursement_due_to_wrong_account_number_message
+                    - failed_disbursement_due_to_technical_issues
+                    - debt_overdue_x_days_message
+              required:
+                - choice
+        required: true
+      responses:
+        '200':
+          description: Customer refunded
+        '401':
+          description: Unauthenticated
+        '404':
+          description: Loan offer not found
+        '500':
+          description: Server error. Report to Developer
+        '503':
+          description: Service Unavailable
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/loan-offers/{loanOfferId}/payment-processing:
+    post:
+      tags: [Application]
+      summary: Process the payment on a loan (requires the permissions "loans" AND "loan-payment-processing" for a staff)
+      description: Process the payment on a loan (requires the permissions "loans" AND "loan-payment-processing" for a staff)
+      parameters:
+        - name: loanOfferId
+          description: The ID of the loan offer
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        description: Data for processing the payment on a loan
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                amount:
+                  description: The amount paid (Value is in Kobo)
+                  type: string
+                  example: 100000
+              required:
+                - amount
+        required: true
+      responses:
+        '200':
+          description: Loan payment processed successfully
+        '401':
+          description: Unauthenticated
+        '404':
+          description: Loan offer not found
+        '500':
+          description: Server error. Report to Developer
+        '503':
+          description: Service Unavailable
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/transactions:
+    get:
+      tags: [Application]
+      summary: Get transactions (requires the permissions "transactions" for a staff)
+      description: Get transactions (requires the permissions "transactions" for a staff)
+      parameters:
+        - name: page
+          in: query
+          description: The current page
+          required: false
+          schema:
+            type: integer
+            example: 1
+        - name: per_page
+          in: query
+          description: The number of items to return per page (Default is 20)
+          required: false
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/transactions/successful:
+    get:
+      tags: [Application]
+      summary: Get successful transactions (requires the permissions "transactions" for a staff)
+      description: Get successful transactions (requires the permissions "transactions" for a staff)
+      parameters:
+        - name: page
+          in: query
+          description: The current page
+          required: false
+          schema:
+            type: integer
+            example: 1
+        - name: per_page
+          in: query
+          description: The number of items to return per page (Default is 20)
+          required: false
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/transactions/notification:
+    post:
+      tags: [Interswitch]
+      summary: Payment Notification
+      description: Payment Notification
+      requestBody:
+        description: Data for payment notification
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                loanId:
+                  description: The ID of the loan
+                  type: string
+                  example: '1'
+                customerId:
+                  description: The phone number of the customer
+                  type: string
+                  example: '2348123456789'
+                paymentRef:
+                  description: The reference to the payment
+                  type: string
+                  example: 'FBN|WEB|ILS|20170503121143|8903'
+                amount:
+                  description: The payment amount (Value is in kobo)
+                  type: integer
+                  example: 500000
+              required:
+                - loanId
+                - customerId
+                - paymentRef
+                - amount
+        required: true
+      responses:
+        '200':
+          description: Payment notification successful
+        '400':
+          description: Customer not found, Offer not found, Loan status not "OPEN" or "OVERDUE", No record of loan collected on offer, Failed to update loan status, Failed to refund customer, Failed to send SMS
+        '401':
+          description: Unauthenticated
+        '422':
+          description: Validation errors
+        '500':
+          description: Server error. Report to Developer
+        '503':
+          description: Service Unavailable
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - basicAuth: []
+  /api/name-enquiry:
+    post:
+      tags: [Interswitch]
+      summary: Name enquiry
+      description: Name enquiry
+      requestBody:
+        description: Data for name enquiry
+        content:
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/Envelope'
+        required: true
+      responses:
+        '200':
+          description: Request successful
+        '400':
+          description: Account number does not exist
+        '401':
+          description: Unauthenticated
+        '422':
+          description: Validation errors
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/xml:
+              schema:
+                type: object
+  /api/transactions/search:
+    get:
+      tags: [Application]
+      summary: Search a transaction (requires the permissions "transactions" AND "transaction-search" for a staff)
+      description: Search a transaction (requires the permissions "transactions" AND "transaction-search" for a staff)
+      parameters:
+        - name: interswitch_response_code
+          description: The interswitch response code
+          in: query
+          required: false
+          schema:
+            type: string
+            example: '00'
+        - name: amount_from
+          description: The amount to search from (Value is in Kobo)
+          in: query
+          required: false
+          schema:
+            type: integer
+            example: 100000
+        - name: amount_to
+          description: The amount to search to (Value is in Kobo)
+          in: query
+          required: false
+          schema:
+            type: integer
+            example: 600000
+        - name: reference
+          description: The reference of the transaction
+          in: query
+          required: false
+          schema:
+            type: string
+            example: GTB|Web|3QTI0001|ILS|290722183031|TH9FQE7N
+        - name: type[]
+          in: query
+          description: The type of the transaction
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - DEBIT
+                - CREDIT
+                - REFUND
+                - PAYMENT
+                - MANUAL
+                - NONE
+              example: OPEN
+        - name: from_date
+          in: query
+          description: The date to search from (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-01-01'
+        - name: to_date
+          in: query
+          description: The date to search to (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-12-31'
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '422':
+          description: Validation errors
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/transactions/{transactionId}:
+    parameters:
+      - name: transactionId
+        in: path
+        required: true
+        description: The ID of the transaction
+        schema:
+          type: string
+          example: 1
+    get:
+      tags: [Application]
+      summary: Get a transaction (requires the permissions "transactions" for a staff)
+      description: Get a transaction (requires the permissions "transactions" for a staff)
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '404':
+          description: Transaction not found
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/transactions/{transactionId}/query:
+    get:
+      tags: [Application]
+      summary: Query a transaction from Interswitch (requires the permissions "transactions" AND "transaction-query" for a staff)
+      description: Query a transaction from Interswitch (requires the permissions "transactions" AND "transaction-query" for a staff)
+      parameters:
+        - name: transactionId
+          in: path
+          required: true
+          description: The ID of the transaction
+          schema:
+            type: string
+            example: 1
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '422':
+          description: Validation errors
+        '500':
+          description: Server error. Report to Developer
+        '503':
+          description: Service Unavailable
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/customers:
+    get:
+      tags: [Application]
+      summary: Get customers (requires the permissions "customers" for a staff)
+      description: Get customers (requires the permissions "customers" for a staff)
+      parameters:
+        - name: page
+          in: query
+          description: The current page
+          required: false
+          schema:
+            type: integer
+            example: 1
+        - name: per_page
+          in: query
+          description: The number of items to return per page (Default is 20)
+          required: false
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/customers/loaned:
+    get:
+      tags: [Application]
+      summary: Get customers that have been granted loans (requires the permissions "customers" for a staff)
+      description: Get customers that have been granted loans (requires the permissions "customers" for a staff)
+      parameters:
+        - name: page
+          in: query
+          description: The current page
+          required: false
+          schema:
+            type: integer
+            example: 1
+        - name: per_page
+          in: query
+          description: The number of items to return per page (Default is 20)
+          required: false
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/customers/search:
+    get:
+      tags: [Application]
+      summary: Search for customers (requires the permissions "customers" for a staff)
+      description: Search for customers (requires the permissions "customers" for a staff)
+      parameters:
+        - name: name
+          in: query
+          description: The first name or last name of the customer
+          required: false
+          schema:
+            type: string
+            example: Alex
+        - name: first_name
+          in: query
+          description: The first name of the customer
+          required: false
+          schema:
+            type: string
+            example: Rick
+        - name: last_name
+          in: query
+          description: The last name of the customer
+          required: false
+          schema:
+            type: string
+            example: Jeffrey
+        - name: bvn
+          in: query
+          description: The BVN of the customer
+          required: false
+          schema:
+            type: string
+            example: '22222222222'
+        - name: page
+          in: query
+          description: The current page
+          required: false
+          schema:
+            type: integer
+            example: 1
+        - name: per_page
+          in: query
+          description: The number of items to return per page (Default is 20)
+          required: false
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '422':
+          description: Validation errors
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/customers/search/bvn:
+    get:
+      tags: [Application]
+      summary: Search for customers by BVN (requires the permissions "customers" AND "customer-bvn-search" for a staff)
+      description: Search for customers by BVN (requires the permissions "customers" AND "customer-bvn-search" for a staff)
+      parameters:
+        - name: q
+          in: query
+          description: The search query
+          required: true
+          schema:
+            type: string
+            example: '22222222222'
+        - name: page
+          in: query
+          description: The current page
+          required: false
+          schema:
+            type: integer
+            example: 1
+        - name: per_page
+          in: query
+          description: The number of items to return per page (Default is 20)
+          required: false
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '422':
+          description: Validation errors
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/customers/search/name:
+    get:
+      tags: [Application]
+      summary: Search for customers by name (requires the permissions "customers" AND "customer-name-search" for a staff)
+      description: Search for customers by name (requires the permissions "customers" AND "customer-name-search" for a staff)
+      parameters:
+        - name: q
+          in: query
+          description: The search query
+          required: true
+          schema:
+            type: string
+            example: 'oluyemi'
+        - name: page
+          in: query
+          description: The current page
+          required: false
+          schema:
+            type: integer
+            example: 1
+        - name: per_page
+          in: query
+          description: The number of items to return per page (Default is 20)
+          required: false
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '422':
+          description: Validation errors
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/customers/{customerId}:
+    parameters:
+      - name: customerId
+        in: path
+        required: true
+        description: The ID or phone number of the customer
+        schema:
+          type: string
+          example: 1
+    get:
+      tags: [Application]
+      summary: Get a customer (requires the permissions "customers" for a staff)
+      description: Get a customer (requires the permissions "customers" for a staff)
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '404':
+          description: Customer not found
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+    put:
+      tags: [Application]
+      summary: Update a customer (requires the permissions "customers", "collection-cases" AND "super-collector" for a staff)
+      description: Update a customer (requires the permissions "customers", "collection-cases" AND "super-collector" for a staff)
+      requestBody:
+        description: Data for updating customer
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                first_name:
+                  description: The first name of the customer
+                  type: string
+                  example: Eric
+                last_name:
+                  description: The last name of the customer
+                  type: string
+                  example: Cross
+              required:
+                - first_name
+                - last_name
+        required: true
+      responses:
+        '200':
+          description: Customer updated successfully
+        '401':
+          description: Unauthenticated
+        '404':
+          description: Customer not found
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/customers/{customerId}/credit-score:
+    get:
+      tags: [Application]
+      summary: Get the credit score of a customer (requires the permissions "customers" AND "customer-credit-score" for a staff)
+      description: Get the credit score of a customer (requires the permissions "customers" AND "customer-credit-score" for a staff)
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          description: The ID or phone number of the customer
+          schema:
+            type: string
+            example: 1
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '404':
+          description: Customer not found
+        '500':
+          description: Server error. Report to Developer
+        '503':
+          description: Service Unavailable
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/customers/{customerId}/credit-score-history:
+    get:
+      tags: [Application]
+      summary: Get the credit score history of a customer (requires the permissions "customers" AND "customer-credit-score" for a staff)
+      description: Get the credit score history of a customer (requires the permissions "customers" AND "customer-credit-score" for a staff)
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          description: The ID or phone number of the customer
+          schema:
+            type: string
+            example: 1
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '404':
+          description: Customer not found
+        '500':
+          description: Server error. Report to Developer
+        '503':
+          description: Service Unavailable
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/customers/{customerId}/loan-offers:
+    get:
+      tags: [Application]
+      summary: The loan offers of the customer (requires the permissions "customers" AND "customer-loans" for a staff)
+      description: The loan offers of the customer (requires the permissions "customers" AND "customer-loans" for a staff)
+      parameters:
+        - name: customerId
+          in: path
+          description: The ID or phone number of the customer
+          required: true
+          schema:
+            type: string
+            example: 1
+        - name: page
+          in: query
+          description: The current page
+          required: false
+          schema:
+            type: integer
+            example: 1
+        - name: per_page
+          in: query
+          description: The number of items to return per page (Default is 20)
+          required: false
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/customers/{customerId}/virtual-accounts:
+    get:
+      tags: [Application]
+      summary: Get the virtual account of a customer (requires the permissions "customers" AND "customer-virtual-accounts" for a staff)
+      description: Get the virtual account of a customer (requires the permissions "customers" AND "customer-virtual-accounts" for a staff)
+      parameters:
+        - name: customerId
+          in: path
+          description: The ID or phone number of the customer
+          required: true
+          schema:
+            type: string
+            example: 1
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/customers/{customerId}/crc:
+    get:
+      tags: [Application]
+      summary: Get the CRC record of a customer (requires the permissions "customers" AND "customer-credit-bureau-data" for a staff)
+      description: Get the CRC record of a customer (requires the permissions "customers" AND "customer-credit-bureau-data" for a staff)
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          description: The ID or phone number of the customer
+          schema:
+            type: string
+            example: 1
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '404':
+          description: Customer not found
+        '500':
+          description: Server error. Report to Developer
+        '503':
+          description: Service Unavailable
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/customers/{customerId}/first-central:
+    get:
+      tags: [Application]
+      summary: Get the First Central record of a customer (requires the permissions "customers" AND "customer-credit-bureau-data" for a staff)
+      description: Get the First Central record of a customer (requires the permissions "customers" AND "customer-credit-bureau-data" for a staff)
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          description: The ID or phone number of the customer
+          schema:
+            type: string
+            example: 1
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '404':
+          description: Customer not found
+        '500':
+          description: Server error. Report to Developer
+        '503':
+          description: Service Unavailable
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/fees:
+    get:
+      tags: [Application]
+      summary: Get fees (requires the permissions "fees" for a staff)
+      description: Get fees (requires the permissions "fees" for a staff)
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+    post:
+      tags: [Application]
+      summary: Create fee (requires the permissions "fees" for a staff)
+      description: Create fee (requires the permissions "fees" for a staff)
+      requestBody:
+        description: Data for creating fee
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                name:
+                  description: The name of the fee
+                  type: string
+                  example: Tax
+                amount:
+                  description: The amount of the fee (Value is in kobo)
+                  type: integer
+                  example: 10000
+              required:
+                - name
+                - amount
+        required: true
+      responses:
+        '201':
+          description: Fee created successfully
+        '401':
+          description: Unauthenticated
+        '422':
+          description: Validation errors
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/fees/{feeId}:
+    parameters:
+      - name: feeId
+        in: path
+        required: true
+        description: The ID of the fee
+        schema:
+          type: integer
+          example: 1
+    get:
+      tags: [Application]
+      summary: Get a fee (requires the permissions "fees" for a staff)
+      description: Get a fee (requires the permissions "fees" for a staff)
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '404':
+          description: Fee not found
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+    put:
+      tags: [Application]
+      summary: Update fee (requires the permissions "fees" for a staff)
+      description: Update fee (requires the permissions "fees" for a staff)
+      requestBody:
+        description: Data for updating fee
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                name:
+                  description: The name of the fee
+                  type: string
+                  example: Tax
+                amount:
+                  description: The amount of the fee (Value is in kobo)
+                  type: integer
+                  example: 10000
+              required:
+                - name
+                - amount
+        required: true
+      responses:
+        '200':
+          description: Fee updated successfully
+        '401':
+          description: Unauthenticated
+        '404':
+          description: Fee not found
+        '422':
+          description: Validation errors
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+    delete:
+      tags: [Application]
+      summary: Delete fee (requires the permissions "fees" for a staff)
+      description: Delete fee (requires the permissions "fees" for a staff)
+      responses:
+        '200':
+          description: Fee deleted successfully
+        '401':
+          description: Unauthenticated
+        '404':
+          description: Fee not found
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/whitelists:
+    get:
+      tags: [Application]
+      summary: Get whitelisted customers (requires the permissions "whitelists" for a staff)
+      description: Get whitelisted customers (requires the permissions "whitelists" for a staff)
+      parameters:
+        - name: page
+          in: query
+          description: The current page
+          required: false
+          schema:
+            type: integer
+            example: 1
+        - name: per_page
+          in: query
+          description: The number of items to return per page (Default is 20)
+          required: false
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+    post:
+      tags: [Application]
+      summary: Whitelist a customer (requires the permissions "whitelists" for a staff)
+      description: Whitelist a customer (requires the permissions "whitelists" for a staff)
+      requestBody:
+        description: Data for whitelisting a customer
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                phone_number:
+                  description: The phone number of the customer
+                  type: string
+                  example: '2348123456789'
+              required:
+                - phone_number
+        required: true
+      responses:
+        '201':
+          description: Phone number whitelisted
+        '401':
+          description: Unauthenticated
+        '422':
+          description: Validation errors
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/whitelists/{customerId}:
+    parameters:
+      - name: customerId
+        in: path
+        description: The phone number of the customer
+        required: true
+        schema:
+          type: string
+          example: '2348123456789'
+    get:
+      tags: [Application]
+      summary: Get a whitelisted customer by phone number (requires the permissions "whitelists" for a staff)
+      description: Get a whitelisted customer by phone number (requires the permissions "whitelists" for a staff)
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '404':
+          description: Phone number not whitelisted
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+    delete:
+      tags: [Application]
+      summary: Remove a phone number from the whitelist (requires the permissions "whitelists" for a staff)
+      description: Remove a phone number from the whitelist (requires the permissions "whitelists" for a staff)
+      responses:
+        '200':
+          description: Phone number removed from whitelist
+        '401':
+          description: Unauthenticated
+        '404':
+          description: Phone number not whitelisted
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/blacklists:
+    get:
+      tags: [Application]
+      summary: Get blacklisted customers (requires the permissions "blacklists" for a staff)
+      description: Get blacklisted customers (requires the permissions "blacklists" for a staff)
+      parameters:
+        - name: page
+          in: query
+          description: The current page
+          required: false
+          schema:
+            type: integer
+            example: 1
+        - name: per_page
+          in: query
+          description: The number of items to return per page (Default is 20)
+          required: false
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+    post:
+      tags: [Application]
+      summary: Blacklist a customer (requires the permissions "blacklists" for a staff)
+      description: Blacklist a customer (requires the permissions "blacklists" for a staff)
+      requestBody:
+        description: Data for blacklisting a customer
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                phone_number:
+                  description: The phone number of the customer
+                  type: string
+                  example: '2348123456789'
+              required:
+                - phone_number
+        required: true
+      responses:
+        '201':
+          description: Phone number blacklisted
+        '401':
+          description: Unauthenticated
+        '422':
+          description: Validation errors
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/blacklists/count:
+    get:
+      tags: [Application]
+      summary: Get the blacklisted customers count (requires the permissions "blacklists" for a staff)
+      description: Get the blacklisted customers count (requires the permissions "blacklists" for a staff)
+      parameters:
+        - name: from_date
+          in: query
+          description: The date to search from (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-01-01'
+        - name: to_date
+          in: query
+          description: The date to search to (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-12-31'
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/blacklists/{customerId}:
+    parameters:
+        - name: customerId
+          in: path
+          description: The phone number of the customer
+          required: true
+          schema:
+            type: string
+            example: '2348123456789'
+    get:
+      tags: [Application]
+      summary: Get a blacklisted customer by phone number (requires the permissions "blacklists" for a staff)
+      description: Get a blacklisted customer by phone number (requires the permissions "blacklists" for a staff)
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '404':
+          description: Phone number not blacklisted
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+    delete:
+      tags: [Application]
+      summary: Remove a phone number from the blacklist (requires the permissions "blacklists" for a staff)
+      description: Remove a phone number from the blacklist (requires the permissions "blacklists" for a staff)
+      responses:
+        '200':
+          description: Phone number removed from blacklist
+        '401':
+          description: Unauthenticated
+        '404':
+          description: Phone number not blacklisted
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/crcs:
+    get:
+      tags: [Application]
+      summary: Get CRC records (requires the permissions "crcs" for a staff)
+      description: Get CRC records (requires the permissions "crcs" for a staff)
+      parameters:
+        - name: page
+          in: query
+          description: The current page
+          required: false
+          schema:
+            type: integer
+            example: 1
+        - name: per_page
+          in: query
+          description: The number of items to return per page (Default is 20)
+          required: false
+          schema:
+            type: integer
+            example: 1
+        - name: from_date
+          in: query
+          description: The date to search from (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-01-01'
+        - name: to_date
+          in: query
+          description: The date to search to (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-12-31'
+        - name: delinquencies
+          in: query
+          description: The number of deliquencies
+          required: false
+          schema:
+            type: integer
+            example: 0
+        - name: passes_check
+          in: query
+          description: Check to know if recent CRC check passed
+          required: false
+          schema:
+            type: string
+            enum:
+              - "YES"
+              - "NO"
+            example: "YES"
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/crcs/report:
+    get:
+      tags: [Application]
+      summary: Generate CRC report (requires the permissions "crcs" AND "crc-reports" for a staff)
+      description: Generate CRC report (requires the permissions "crcs" AND "crc-reports" for a staff)
+      parameters:
+        - name: from_date
+          in: query
+          description: The date to pull report from (It should be in the format "YYYY-MM-DD")
+          required: true
+          schema:
+            type: string
+            format: date
+            example: '2022-01-01'
+        - name: to_date
+          in: query
+          description: The date to pull report to (It should be in the format "YYYY-MM-DD")
+          required: true
+          schema:
+            type: string
+            format: date
+            example: '2022-12-31'
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/crc-histories:
+    get:
+      tags: [Application]
+      summary: Get the CRC histories (requires the permissions "crcs" AND "crc-histories" for a staff)
+      description: Get the CRC histories (requires the permissions "crcs" AND "crc-histories" for a staff)
+      parameters:
+        - name: from_date
+          in: query
+          description: The date to search from (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-01-01'
+        - name: to_date
+          in: query
+          description: The date to search to (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-12-31'
+        - name: page
+          in: query
+          description: The current page
+          required: false
+          schema:
+            type: integer
+            example: 1
+        - name: per_page
+          in: query
+          description: The number of items to return per page (Default is 20)
+          required: false
+          schema:
+            type: integer
+            example: 15
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/first-centrals:
+    get:
+      tags: [Application]
+      summary: Get First Central records (requires the permissions "first-centrals" for a staff)
+      description: Get First Central records (requires the permissions "first-centrals" for a staff)
+      parameters:
+        - name: page
+          in: query
+          description: The current page
+          required: false
+          schema:
+            type: integer
+            example: 1
+        - name: per_page
+          in: query
+          description: The number of items to return per page (Default is 20)
+          required: false
+          schema:
+            type: integer
+            example: 1
+        - name: from_date
+          in: query
+          description: The date to search from (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-01-01'
+        - name: to_date
+          in: query
+          description: The date to search to (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-12-31'
+        - name: delinquencies
+          in: query
+          description: The number of deliquencies
+          required: false
+          schema:
+            type: integer
+            example: 0
+        - name: passes_check
+          in: query
+          description: Check to know if recent CRC check passed
+          required: false
+          schema:
+            type: string
+            enum:
+              - "YES"
+              - "NO"
+            example: "YES"
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/first-centrals/report:
+    get:
+      tags: [Application]
+      summary: Generate First Central report (requires the permissions "first-centrals" AND "first-central-reports" for a staff)
+      description: Generate First Central report (requires the permissions "first-centrals" AND "first-central-reports" for a staff)
+      parameters:
+        - name: from_date
+          in: query
+          description: The date to pull report from (It should be in the format "YYYY-MM-DD")
+          required: true
+          schema:
+            type: string
+            format: date
+            example: '2022-01-01'
+        - name: to_date
+          in: query
+          description: The date to pull report to (It should be in the format "YYYY-MM-DD")
+          required: true
+          schema:
+            type: string
+            format: date
+            example: '2022-12-31'
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/first-central-histories:
+    get:
+      tags: [Application]
+      summary: Get the First Central histories (requires the permissions "first-centrals" AND "first-central-histories" for a staff)
+      description: Get the First Central histories (requires the permissions "first-centrals" AND "first-central-histories" for a staff)
+      parameters:
+        - name: from_date
+          in: query
+          description: The date to search from (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-01-01'
+        - name: to_date
+          in: query
+          description: The date to search to (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-12-31'
+        - name: page
+          in: query
+          description: The current page
+          required: false
+          schema:
+            type: integer
+            example: 1
+        - name: per_page
+          in: query
+          description: The number of items to return per page (Default is 20)
+          required: false
+          schema:
+            type: integer
+            example: 15
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/activity-logs:
+    get:
+      tags: [Application]
+      summary: Get activity logs (requires the permissions "activity-logs" for a staff)
+      description: Get activity logs (requires the permissions "activity-logs" for a staff)
+      parameters:
+        - name: user_id
+          in: query
+          description: The ID of the user
+          required: false
+          schema:
+            type: integer
+            example: 1
+        - name: page
+          in: query
+          description: The current page
+          required: false
+          schema:
+            type: integer
+            example: 1
+        - name: per_page
+          in: query
+          description: The number of items to return per page (Default is 20)
+          required: false
+          schema:
+            type: integer
+            example: 1
+        - name: from_date
+          in: query
+          description: The date to search from (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-01-01'
+        - name: to_date
+          in: query
+          description: The date to search to (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-12-31'
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/credit-scores:
+    get:
+      tags: [Application]
+      summary: Get the credit scores of customers (requires the permissions "credit-scores" for a staff)
+      description: Get the credit scores of customers (requires the permissions "credit-scores" for a staff)
+      parameters:
+        - name: score_from
+          in: query
+          description: The credit score to search from
+          required: false
+          schema:
+            type: integer
+            example: 20
+        - name: score_to
+          in: query
+          description: The credit score to search to
+          required: false
+          schema:
+            type: integer
+            example: 50
+        - name: page
+          in: query
+          description: The current page
+          required: false
+          schema:
+            type: integer
+            example: 1
+        - name: per_page
+          in: query
+          description: The number of items to return per page (Default is 20)
+          required: false
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/loans/disbursed-principal:
+    get:
+      tags: [Application]
+      summary: Get the loans disbursed principal (requires the permissions "loans" AND "loan-metrics" for a staff)
+      description: Get the loans disbursed principal (requires the permissions "loans" AND "loan-metrics" for a staff)
+      parameters:
+        - name: from_date
+          in: query
+          description: The date to search from (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-01-01'
+        - name: to_date
+          in: query
+          description: The date to search to (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-12-31'
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/loans/closed-principal:
+    get:
+      tags: [Application]
+      summary: Get the closed loans principal (requires the permissions "loans" AND "loan-metrics" for a staff)
+      description: Get the closed loans principal (requires the permissions "loans" AND "loan-metrics" for a staff)
+      parameters:
+        - name: from_date
+          in: query
+          description: The date to search from (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-01-01'
+        - name: to_date
+          in: query
+          description: The date to search to (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-12-31'
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/loans/overdue-principal:
+    get:
+      tags: [Application]
+      summary: Get the overdue loans principal (requires the permissions "loans" AND "loan-metrics" for a staff)
+      description: Get the overdue loans principal (requires the permissions "loans" AND "loan-metrics" for a staff)
+      parameters:
+        - name: from_date
+          in: query
+          description: The date to search from (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-01-01'
+        - name: to_date
+          in: query
+          description: The date to search to (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-12-31'
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/loans/disbursed-total:
+    get:
+      tags: [Application]
+      summary: Get the disbursed loans total (Principal plus Interest) (requires the permissions "loans" AND "loan-metrics" for a staff)
+      description: Get the disbursed loans total (Principal plus Interest) (requires the permissions "loans" AND "loan-metrics" for a staff)
+      parameters:
+        - name: from_date
+          in: query
+          description: The date to search from (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-01-01'
+        - name: to_date
+          in: query
+          description: The date to search to (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-12-31'
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/loans/closed-total:
+    get:
+      tags: [Application]
+      summary: Get the closed loans total (Principal plus Interest) (requires the permissions "loans" AND "loan-metrics" for a staff)
+      description: Get the closed loans total (Principal plus Interest) (requires the permissions "loans" AND "loan-metrics" for a staff)
+      parameters:
+        - name: from_date
+          in: query
+          description: The date to search from (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-01-01'
+        - name: to_date
+          in: query
+          description: The date to search to (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-12-31'
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/loans/overdue-total:
+    get:
+      tags: [Application]
+      summary: Get the overdue loans total (Principal plus Interest) (requires the permissions "loans" AND "loan-metrics" for a staff)
+      description: Get the overdue loans total (Principal plus Interest) (requires the permissions "loans" AND "loan-metrics" for a staff)
+      parameters:
+        - name: from_date
+          in: query
+          description: The date to search from (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-01-01'
+        - name: to_date
+          in: query
+          description: The date to search to (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-12-31'
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/loans/disbursed-interest:
+    get:
+      tags: [Application]
+      summary: Get the disbursed loans interest (requires the permissions "loans" AND "loan-metrics" for a staff)
+      description: Get the disbursed loans interest (requires the permissions "loans" AND "loan-metrics" for a staff)
+      parameters:
+        - name: from_date
+          in: query
+          description: The date to search from (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-01-01'
+        - name: to_date
+          in: query
+          description: The date to search to (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-12-31'
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/loans/closed-interest:
+    get:
+      tags: [Application]
+      summary: Get the closed loans interest (requires the permissions "loans" AND "loan-metrics" for a staff)
+      description: Get the closed loans interest (requires the permissions "loans" AND "loan-metrics" for a staff)
+      parameters:
+        - name: from_date
+          in: query
+          description: The date to search from (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-01-01'
+        - name: to_date
+          in: query
+          description: The date to search to (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-12-31'
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/loans/overdue-interest:
+    get:
+      tags: [Application]
+      summary: Get the overdue loans interest (requires the permissions "loans" AND "loan-metrics" for a staff)
+      description: Get the overdue loans interest (requires the permissions "loans" AND "loan-metrics" for a staff)
+      parameters:
+        - name: from_date
+          in: query
+          description: The date to search from (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-01-01'
+        - name: to_date
+          in: query
+          description: The date to search to (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-12-31'
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/loans/open-total:
+    get:
+      tags: [Application]
+      summary: Get the open loans total (Principal plus Interest) (requires the permissions "loans" AND "loan-metrics" for a staff)
+      description: Get the open loans total (Principal plus Interest) (requires the permissions "loans" AND "loan-metrics" for a staff)
+      parameters:
+        - name: from_date
+          in: query
+          description: The date to search from (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-01-01'
+        - name: to_date
+          in: query
+          description: The date to search to (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-12-31'
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/loans/open-principal:
+    get:
+      tags: [Application]
+      summary: Get the open loans principal (requires the permissions "loans" AND "loan-metrics" for a staff)
+      description: Get the open loans principal (requires the permissions "loans" AND "loan-metrics" for a staff)
+      parameters:
+        - name: from_date
+          in: query
+          description: The date to search from (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-01-01'
+        - name: to_date
+          in: query
+          description: The date to search to (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-12-31'
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/loans/open-interest:
+    get:
+      tags: [Application]
+      summary: Get the open loans interest (requires the permissions "loans" AND "loan-metrics" for a staff)
+      description: Get the open loans interest (requires the permissions "loans" AND "loan-metrics" for a staff)
+      parameters:
+        - name: from_date
+          in: query
+          description: The date to search from (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-01-01'
+        - name: to_date
+          in: query
+          description: The date to search to (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-12-31'
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/loans/due-today-total:
+    get:
+      tags: [Application]
+      summary: Get the open loans due today (Principal plus Interest) (requires the permissions "loans" AND "loan-metrics" for a staff)
+      description: Get the open loans due today (Principal plus Interest) (requires the permissions "loans" AND "loan-metrics" for a staff)
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/loans/due-today-principal:
+    get:
+      tags: [Application]
+      summary: Get the open loans due today principal (requires the permissions "loans" AND "loan-metrics" for a staff)
+      description: Get the open loans due today principal (requires the permissions "loans" AND "loan-metrics" for a staff)
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/loans/due-today-interest:
+    get:
+      tags: [Application]
+      summary: Get the open loans due today interest (requires the permissions "loans" AND "loan-metrics" for a staff)
+      description: Get the open loans due today interest (requires the permissions "loans" AND "loan-metrics" for a staff)
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/loans/disbursed-count:
+    get:
+      tags: [Application]
+      summary: Get the disbursed loans count (requires the permissions "loans" AND "loan-metrics" for a staff)
+      description: Get the disbursed loans count (requires the permissions "loans" AND "loan-metrics" for a staff)
+      parameters:
+        - name: from_date
+          in: query
+          description: The date to search from (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-01-01'
+        - name: to_date
+          in: query
+          description: The date to search to (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-12-31'
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/loans/closed-count:
+    get:
+      tags: [Application]
+      summary: Get the closed loans count (requires the permissions "loans" AND "loan-metrics" for a staff)
+      description: Get the closed loans count (requires the permissions "loans" AND "loan-metrics" for a staff)
+      parameters:
+        - name: from_date
+          in: query
+          description: The date to search from (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-01-01'
+        - name: to_date
+          in: query
+          description: The date to search to (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-12-31'
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/loans/open-count:
+    get:
+      tags: [Application]
+      summary: Get the open loans count (requires the permissions "loans" AND "loan-metrics" for a staff)
+      description: Get the open loans count (requires the permissions "loans" AND "loan-metrics" for a staff)
+      parameters:
+        - name: from_date
+          in: query
+          description: The date to search from (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-01-01'
+        - name: to_date
+          in: query
+          description: The date to search to (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-12-31'
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/loans/overdue-count:
+    get:
+      tags: [Application]
+      summary: Get the overdue loans count (requires the permissions "loans" AND "loan-metrics" for a staff)
+      description: Get the overdue loans count (requires the permissions "loans" AND "loan-metrics" for a staff)
+      parameters:
+        - name: from_date
+          in: query
+          description: The date to search from (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-01-01'
+        - name: to_date
+          in: query
+          description: The date to search to (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-12-31'
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/loans/days-past-due-principal:
+    get:
+      tags: [Application]
+      summary: Get the days past due principal (requires the permissions "loans" AND "loan-metrics" for a staff)
+      description: Get the days past due principal (requires the permissions "loans" AND "loan-metrics" for a staff)
+      parameters:
+        - name: days
+          in: query
+          description: The number of days the loan has been due for
+          required: false
+          schema:
+            type: integer
+            example: 3
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/loans/days-past-due-interest:
+    get:
+      tags: [Application]
+      summary: Get the days past due interest (requires the permissions "loans" AND "loan-metrics" for a staff)
+      description: Get the days past due interest (requires the permissions "loans" AND "loan-metrics" for a staff)
+      parameters:
+        - name: days
+          in: query
+          description: The number of days the loan has been due for
+          required: false
+          schema:
+            type: integer
+            example: 3
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/loans/days-past-due-total:
+    get:
+      tags: [Application]
+      summary: Get the days past due total (requires the permissions "loans" AND "loan-metrics" for a staff)
+      description: Get the days past due total (requires the permissions "loans" AND "loan-metrics" for a staff)
+      parameters:
+        - name: days
+          in: query
+          description: The number of days the loan has been due for
+          required: false
+          schema:
+            type: integer
+            example: 3
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/loans/penalties:
+    get:
+      tags: [Application]
+      summary: Get the penalties (requires the permissions "loans" AND "loan-metrics" for a staff)
+      description: Get the penalties (requires the permissions "loans" AND "loan-metrics" for a staff)
+      parameters:
+        - name: from_date
+          in: query
+          description: The date to search from (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-01-01'
+        - name: to_date
+          in: query
+          description: The date to search to (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-12-31'
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/loans/penalties-count:
+    get:
+      tags: [Application]
+      summary: Get the penalties count (requires the permissions "loans" AND "loan-metrics" for a staff)
+      description: Get the penalties count (requires the permissions "loans" AND "loan-metrics" for a staff)
+      parameters:
+        - name: from_date
+          in: query
+          description: The date to search from (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-01-01'
+        - name: to_date
+          in: query
+          description: The date to search to (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-12-31'
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/loans/penalties-due:
+    get:
+      tags: [Application]
+      summary: Get the penalties due (requires the permissions "loans" AND "loan-metrics" for a staff)
+      description: Get the penalties due (requires the permissions "loans" AND "loan-metrics" for a staff)
+      parameters:
+        - name: from_date
+          in: query
+          description: The date to search from (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-01-01'
+        - name: to_date
+          in: query
+          description: The date to search to (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-12-31'
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/loans/penalties-due-count:
+    get:
+      tags: [Application]
+      summary: Get the penalties due count (requires the permissions "loans" AND "loan-metrics" for a staff)
+      description: Get the penalties due count (requires the permissions "loans" AND "loan-metrics" for a staff)
+      parameters:
+        - name: from_date
+          in: query
+          description: The date to search from (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-01-01'
+        - name: to_date
+          in: query
+          description: The date to search to (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-12-31'
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/loans/penalties-collected:
+    get:
+      tags: [Application]
+      summary: Get the penalties collected (requires the permissions "loans" AND "loan-metrics" for a staff)
+      description: Get the penalties collected (requires the permissions "loans" AND "loan-metrics" for a staff)
+      parameters:
+        - name: from_date
+          in: query
+          description: The date to search from (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-01-01'
+        - name: to_date
+          in: query
+          description: The date to search to (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-12-31'
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/loans/total-amount-disbursed-today:
+    get:
+      tags: [Application]
+      summary: Get the total amount disbursed for the day (requires the permissions "loans" AND "loan-metrics" for a staff)
+      description: Get the total amount disbursed for the day (requires the permissions "loans" AND "loan-metrics" for a staff)
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/loans/total-successful-applications:
+    get:
+      tags: [Application]
+      summary: Number of successful loan applications for a certain date range (requires the permissions "loans" AND "loan-metrics" for a staff)
+      description: Number of successful loan applications for a certain date range (requires the permissions "loans" AND "loan-metrics" for a staff)
+      parameters:
+        - name: from_date
+          in: query
+          description: The date to search from (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-01-01'
+        - name: to_date
+          in: query
+          description: The date to search to (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-12-31'
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/loans/total-failed-applications:
+    get:
+      tags: [Application]
+      summary: Number of failed loan applications for a certain date range (requires the permissions "loans" AND "loan-metrics" for a staff)
+      description: Number of failed loan applications for a certain date range (requires the permissions "loans" AND "loan-metrics" for a staff)
+      parameters:
+        - name: from_date
+          in: query
+          description: The date to search from (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-01-01'
+        - name: to_date
+          in: query
+          description: The date to search to (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-12-31'
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/loans/total-amount-recovered:
+    get:
+      tags: [Application]
+      summary: The total amount recovered (requires the permissions "loans" AND "loan-metrics" for a staff)
+      description: The total amount recovered (requires the permissions "loans" AND "loan-metrics" for a staff)
+      parameters:
+        - name: from_date
+          in: query
+          description: The date to search from (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-01-01'
+        - name: to_date
+          in: query
+          description: The date to search to (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-12-31'
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/loans/total-interest-recovered:
+    get:
+      tags: [Application]
+      summary: The total interest recovered (requires the permissions "loans" AND "loan-metrics" for a staff)
+      description: The total interest recovered (requires the permissions "loans" AND "loan-metrics" for a staff)
+      parameters:
+        - name: from_date
+          in: query
+          description: The date to search from (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-01-01'
+        - name: to_date
+          in: query
+          description: The date to search to (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-12-31'
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/loans/npl:
+    get:
+      tags: [Application]
+      summary: Get the NPL (Non-Performing Loans) for a particular number of days (requires the permissions "loans" AND "loan-metrics" for a staff)
+      description: Get the NPL (Non-Performing Loans) for a particular number of days (requires the permissions "loans" AND "loan-metrics" for a staff)
+      parameters:
+        - name: days
+          in: query
+          description: The number of days after due date
+          required: true
+          schema:
+            type: integer
+            example: 30
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '422':
+          description: Validation errors
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/sms:
+    post:
+      tags: [Application]
+      summary: Send custom SMS to customers (requires the permissions "sms" for a staff)
+      description: Send custom SMS to customers (requires the permissions "sms" for a staff)
+      requestBody:
+        description: Data for sending SMS
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                customer_ids[]:
+                  description: The ID of the customers
+                  type: array
+                  items:
+                    type: integer
+                    example: 1
+                message:
+                  description: The message to be send
+                  type: string
+                  example: Thank you for using Quickfund
+              required:
+                - customer_ids[]
+                - message
+            encoding:
+              customer_ids[]:
+                style: form
+        required: true
+      responses:
+        '200':
+          description: SMS(s) dispatched successfully
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/collection-cases:
+    get:
+      tags: [Application]
+      summary: Get collection cases (requires the permissions "collection-cases" for a staff)
+      description: Get collection cases (requires the permissions "collection-cases" for a staff)
+      parameters:
+        - name: page
+          in: query
+          description: The current page
+          required: false
+          schema:
+            type: integer
+            example: 1
+        - name: per_page
+          in: query
+          description: The number of items to return per page (Default is 20)
+          required: false
+          schema:
+            type: integer
+            example: 15
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '403':
+          description: Forbidden
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/collection-cases/search:
+    get:
+      tags: [Application]
+      summary: Search for collection cases (requires the permissions "collection-cases" for a staff)
+      description: Search for collection cases (requires the permissions "collection-cases" for a staff)
+      parameters:
+        - name: collector_id
+          in: query
+          description: The ID of the collector
+          required: false
+          schema:
+            type: integer
+            example: 1
+        - name: remark
+          in: query
+          description: The collection case remark
+          required: false
+          schema:
+            type: string
+            example: He promised to pay
+        - name: assigned_date
+          in: query
+          description: The date the collection case was assigned
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2023-01-01'
+        - name: dpd_from
+          in: query
+          description: The days past due to search from
+          required: false
+          schema:
+            type: integer
+            example: 4
+        - name: dpd_to
+          in: query
+          description: The days past due to search to
+          required: false
+          schema:
+            type: integer
+            example: 6
+        - name: ptp_from
+          in: query
+          description: The promised to pay date to search from
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2023-01-01'
+        - name: ptp_to
+          in: query
+          description: The promised to pay date to search to
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2023-03-01'
+        - name: page
+          in: query
+          description: The current page
+          required: false
+          schema:
+            type: integer
+            example: 1
+        - name: per_page
+          in: query
+          description: The number of items to return per page (Default is 20)
+          required: false
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '422':
+          description: Validation errors
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/collection-cases/allotted:
+    get:
+      tags: [Application]
+      summary: Get the allotted cases of a user (requires the permissions "collection-cases" for a staff)
+      description: Get the allotted cases of a user (requires the permissions "collection-cases" for a staff)
+      parameters:
+        - name: from_date
+          in: query
+          description: The date to search from (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-01-01'
+        - name: to_date
+          in: query
+          description: The date to search to (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-12-31'
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/collection-cases/worked-on:
+    get:
+      tags: [Application]
+      summary: Get the worked on cases of a user (requires the permissions "collection-cases" for a staff)
+      description: Get the worked on cases of a user (requires the permissions "collection-cases" for a staff)
+      parameters:
+        - name: from_date
+          in: query
+          description: The date to search from (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-01-01'
+        - name: to_date
+          in: query
+          description: The date to search to (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-12-31'
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/collection-cases/ptp:
+    get:
+      tags: [Application]
+      summary: Get the cases which a customer promised to pay of a user (requires the permissions "collection-cases" for a staff)
+      description: Get the cases which a customer promised to pay of a user (requires the permissions "collection-cases" for a staff)
+      parameters:
+        - name: from_date
+          in: query
+          description: The date to search from (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-01-01'
+        - name: to_date
+          in: query
+          description: The date to search to (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-12-31'
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/collection-cases/ptp-today:
+    get:
+      tags: [Application]
+      summary: Get the cases which a customer promised to pay today of a user (requires the permissions "collection-cases" for a staff)
+      description: Get the cases which a customer promised to pay today of a user (requires the permissions "collection-cases" for a staff)
+      parameters:
+        - name: page
+          in: query
+          description: The current page
+          required: false
+          schema:
+            type: integer
+            example: 1
+        - name: per_page
+          in: query
+          description: The number of items to return per page (Default is 20)
+          required: false
+          schema:
+            type: integer
+            example: 15
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/collection-cases/allotted-arrears:
+    get:
+      tags: [Application]
+      summary: Get the cases allotted arrears of a user (requires the permissions "collection-cases" for a staff)
+      description: Get the cases allotted arrears of a user (requires the permissions "collection-cases" for a staff)
+      parameters:
+        - name: from_date
+          in: query
+          description: The date to search from (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-01-01'
+        - name: to_date
+          in: query
+          description: The date to search to (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-12-31'
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/collection-cases/paid-today:
+    get:
+      tags: [Application]
+      summary: Get the amount paid on collection cases of a user (requires the permissions "collection-cases" for a staff)
+      description: Get the amount paid on collection cases of a user (requires the permissions "collection-cases" for a staff)
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/collection-cases/paid-today-count:
+    get:
+      tags: [Application]
+      summary: Get the count of the total amount paid on collection cases of a user (requires the permissions "collection-cases" for a staff)
+      description: Get the count of the total amount paid on collection cases of a user (requires the permissions "collection-cases" for a staff)
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/collection-cases/total-allotted:
+    get:
+      tags: [Application]
+      summary: Get the total allotted cases (requires the permissions "collection-cases" AND "super-collector" for a staff)
+      description: Get the total allotted cases (requires the permissions "collection-cases" AND "super-collector" for a staff)
+      parameters:
+        - name: from_date
+          in: query
+          description: The date to search from (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-01-01'
+        - name: to_date
+          in: query
+          description: The date to search to (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-12-31'
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/collection-cases/total-worked-on:
+    get:
+      tags: [Application]
+      summary: Get the total worked on cases (requires the permissions "collection-cases" AND "super-collector" for a staff)
+      description: Get the total worked on cases (requires the permissions "collection-cases" AND "super-collector" for a staff)
+      parameters:
+        - name: from_date
+          in: query
+          description: The date to search from (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-01-01'
+        - name: to_date
+          in: query
+          description: The date to search to (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-12-31'
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/collection-cases/total-ptp:
+    get:
+      tags: [Application]
+      summary: Get the total cases which a customer promised to pay (requires the permissions "collection-cases" AND "super-collector" for a staff)
+      description: Get the total cases which a customer promised to pay (requires the permissions "collection-cases" AND "super-collector" for a staff)
+      parameters:
+        - name: from_date
+          in: query
+          description: The date to search from (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-01-01'
+        - name: to_date
+          in: query
+          description: The date to search to (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-12-31'
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/collection-cases/total-ptp-today:
+    get:
+      tags: [Application]
+      summary: Get the total cases which a customer promised to pay today (requires the permissions "collection-cases" AND "super-collector" for a staff)
+      description: Get the total cases which a customer promised to pay today (requires the permissions "collection-cases" AND "super-collector" for a staff)
+      parameters:
+        - name: page
+          in: query
+          description: The current page
+          required: false
+          schema:
+            type: integer
+            example: 1
+        - name: per_page
+          in: query
+          description: The number of items to return per page (Default is 20)
+          required: false
+          schema:
+            type: integer
+            example: 15
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/collection-cases/total-allotted-arrears:
+    get:
+      tags: [Application]
+      summary: Get the total cases allotted arrears (requires the permissions "collection-cases" AND "super-collector" for a staff)
+      description: Get the total cases allotted arrears (requires the permissions "collection-cases" AND "super-collector" for a staff)
+      parameters:
+        - name: from_date
+          in: query
+          description: The date to search from (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-01-01'
+        - name: to_date
+          in: query
+          description: The date to search to (It should be in the format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-12-31'
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/collection-cases/total-paid-today:
+    get:
+      tags: [Application]
+      summary: Get the total amount paid on collection cases (requires the permissions "collection-cases" AND "super-collector" for a staff)
+      description: Get the total amount paid on collection cases (requires the permissions "collection-cases" AND "super-collector" for a staff)
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/collection-cases/total-paid-today-count:
+    get:
+      tags: [Application]
+      summary: Get the count of the total amount paid on collection cases (requires the permissions "collection-cases" AND "super-collector" for a staff)
+      description: Get the count of the total amount paid on collection cases (requires the permissions "collection-cases" AND "super-collector" for a staff)
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/collection-cases/{collectionCaseId}:
+    get:
+      tags: [Application]
+      summary: Get a collection case (requires the permissions "collection-cases" for a staff)
+      description: Get a collection case (requires the permissions "collection-cases" for a staff)
+      parameters:
+        - name: collectionCaseId
+          in: path
+          description: The ID of the collection case
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '403':
+          description: Forbidden
+        '404':
+          description: Collection case not found
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+    put:
+      tags: [Application]
+      summary: Update a collection case (requires the permissions "collection-cases" for a staff)
+      description: Update a collection case (requires the permissions "collection-cases" for a staff)
+      parameters:
+        - name: collectionCaseId
+          in: path
+          description: The ID of the collection case
+          required: true
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        description: Data for updating a collection case
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                remark:
+                  description: The remark on the case
+                  type: string
+                  example: He promised to pay
+                promised_to_pay_at:
+                  description: The date the customer promised to pay
+                  type: string
+                  format: date
+                  example: '2024-01-01'
+                already_paid_at:
+                  description: The date the customer made payment
+                  type: string
+                  format: date
+                  example: '2022-01-01'
+                comment:
+                  description: Additional comments on the loan
+                  type: string
+                  example: Let's us just see how it goes
+              required:
+                - remark
+        required: true
+      responses:
+        '200':
+          description: Collection case updated successfully
+        '401':
+          description: Unauthenticated
+        '403':
+          description: Forbidden
+        '404':
+          description: Collection case not found
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/collection-cases/{collectionCaseId}/assign:
+    post:
+      tags: [Application]
+      summary: Get a collection case (requires the permissions "collection-cases" AND "super-collector" for a staff)
+      description: Get a collection case (requires the permissions "collection-cases" AND "super-collector" for a staff)
+      parameters:
+        - name: collectionCaseId
+          in: path
+          description: The ID of the collection case
+          required: true
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        description: Data for assign a collection case
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  description: The ID of the user
+                  type: integer
+                  example: 1
+              required:
+                - user_id
+        required: true
+      responses:
+        '200':
+          description: Collection case assigned
+        '401':
+          description: Unauthenticated
+        '403':
+          description: Forbidden
+        '404':
+          description: Collection case not found
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/collection-remarks:
+    get:
+      tags: [Application]
+      summary: Get collection remarks (requires the permissions "super-collector" for a staff)
+      description: Get collection remarks (requires the permissions "super-collector" for a staff)
+      parameters:
+        - name: page
+          in: query
+          description: The current page
+          required: false
+          schema:
+            type: integer
+            example: 1
+        - name: per_page
+          in: query
+          description: The number of items to return per page (Default is 20)
+          required: false
+          schema:
+            type: integer
+            example: 15
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '403':
+          description: Forbidden
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+    post:
+      tags: [Application]
+      summary: Create a collection remark (requires the permissions "super-collector" for a staff)
+      description: Create a collection remark (requires the permissions "super-collector" for a staff)
+      requestBody:
+        description: Data for creating a collection remark
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                name:
+                  description: The collection remark
+                  type: string
+                  example: Promised to pay
+              required:
+                - name
+        required: true
+      responses:
+        '201':
+          description: Collection remark created successfully
+        '401':
+          description: Unauthenticated
+        '403':
+          description: Forbidden
+        '422':
+          description: Validation errors
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/collection-remarks/{collectionRemarkId}:
+    parameters:
+      - name: collectionRemarkId
+        in: path
+        description: The ID of the collection remark
+        required: true
+        schema:
+          type: integer
+          example: 1
+    get:
+      tags: [Application]
+      summary: Get a collection remark (requires the permissions "super-collector" for a staff)
+      description: Get a collection remark (requires the permissions "super-collector" for a staff)
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '403':
+          description: Forbidden
+        '404':
+          description: Collection remark not found
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+    put:
+      tags: [Application]
+      summary: Update a collection remark (requires the permissions "super-collector" for a staff)
+      description: Update a collection remark (requires the permissions "super-collector" for a staff)
+      requestBody:
+        description: Data for updating a collection remark
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                name:
+                  description: The collection remark
+                  type: string
+                  example: Promised to pay
+              required:
+                - name
+        required: true
+      responses:
+        '200':
+          description: Collection remark updated successfully
+        '401':
+          description: Unauthenticated
+        '403':
+          description: Forbidden
+        '404':
+          description: Collection remark not found
+        '422':
+          description: Validation errors
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+    delete:
+      tags: [Application]
+      summary: Delete a collection remark (requires the permissions "super-collector" for a staff)
+      description: Delete a collection remark (requires the permissions "super-collector" for a staff)
+      responses:
+        '200':
+          description: Collection remark deleted successfully
+        '401':
+          description: Unauthenticated
+        '403':
+          description: Forbidden
+        '404':
+          description: Collection remark not found
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/collectors:
+    get:
+      tags: [Application]
+      summary: Get collectors (requires the permissions "collection-cases" for a staff)
+      description: Get collectors (requires the permissions "collection-cases" for a staff)
+      parameters:
+        - name: page
+          in: query
+          description: The current page
+          required: false
+          schema:
+            type: integer
+            example: 1
+        - name: per_page
+          in: query
+          description: The number of items to return per page (Default is 20)
+          required: false
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/roles:
+    get:
+      tags: [Application]
+      summary: Get roles (EXCLUSIVE TO ADMINISTRATORS)
+      description: Get roles (EXCLUSIVE TO ADMINISTRATORS)
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+    post:
+      tags: [Application]
+      summary: Create role (EXCLUSIVE TO ADMINISTRATORS)
+      description: Create role (EXCLUSIVE TO ADMINISTRATORS)
+      requestBody:
+        description: Data for creating role
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                name:
+                  description: The name of the role
+                  type: string
+                  example: Head of Operations
+                permissions[]:
+                  description: the permissions assigned to the role
+                  type: array
+                  items:
+                    type: string
+                    example: loans
+              required:
+                - name
+                - permissions[]
+            encoding:
+              permissions[]:
+                style: form
+        required: true
+      responses:
+        '201':
+          description: Role created successfully
+        '401':
+          description: Unauthenticated
+        '422':
+          description: Validation errors
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/roles/{roleId}:
+    parameters:
+      - name: roleId
+        in: path
+        required: true
+        description: The ID of the role
+        schema:
+          type: integer
+          example: 1
+    get:
+      tags: [Application]
+      summary: Get a role (EXCLUSIVE TO ADMINISTRATORS)
+      description: Get a role (EXCLUSIVE TO ADMINISTRATORS)
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '404':
+          description: Role not found
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+    put:
+      tags: [Application]
+      summary: Update role (EXCLUSIVE TO ADMINISTRATORS)
+      description: Update role (EXCLUSIVE TO ADMINISTRATORS)
+      requestBody:
+        description: Data for updating role
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                name:
+                  description: The name of the role
+                  type: string
+                  example: Head of Operations
+                permissions[]:
+                  description: the permissions assigned to the role
+                  type: array
+                  items:
+                    type: string
+                    example: loans
+              required:
+                - name
+                - permissions[]
+            encoding:
+              permissions[]:
+                style: form
+        required: true
+      responses:
+        '200':
+          description: Role updated successfully
+        '401':
+          description: Unauthenticated
+        '404':
+          description: Role not found
+        '422':
+          description: Validation errors
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+    delete:
+      tags: [Application]
+      summary: Delete role (EXCLUSIVE TO ADMINISTRATORS)
+      description: Delete role (EXCLUSIVE TO ADMINISTRATORS)
+      responses:
+        '200':
+          description: Role deleted successfully
+        '401':
+          description: Unauthenticated
+        '404':
+          description: Role not found
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/departments:
+    get:
+      tags: [Application]
+      summary: Get departments (EXCLUSIVE TO ADMINISTRATORS)
+      description: Get departments (EXCLUSIVE TO ADMINISTRATORS)
+      parameters:
+        - name: page
+          in: query
+          description: The current page
+          required: false
+          schema:
+            type: integer
+            example: 1
+        - name: per_page
+          in: query
+          description: The number of items to return per page (Default is 20)
+          required: false
+          schema:
+            type: integer
+            example: 15
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '403':
+          description: Forbidden
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+    post:
+      tags: [Application]
+      summary: Create a department (EXCLUSIVE TO ADMINISTRATORS)
+      description: Create a department (EXCLUSIVE TO ADMINISTRATORS)
+      requestBody:
+        description: Data for creating a department
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                name:
+                  description: The name of the department
+                  type: string
+                  example: Operations
+              required:
+                - name
+        required: true
+      responses:
+        '201':
+          description: Department created successfully
+        '401':
+          description: Unauthenticated
+        '403':
+          description: Forbidden
+        '422':
+          description: Validation errors
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/departments/{departmentId}:
+    parameters:
+      - name: departmentId
+        in: path
+        description: The ID of the department
+        required: true
+        schema:
+          type: integer
+          example: 1
+    get:
+      tags: [Application]
+      summary: Get a department (EXCLUSIVE TO ADMINISTRATORS)
+      description: Get a department (EXCLUSIVE TO ADMINISTRATORS)
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '403':
+          description: Forbidden
+        '404':
+          description: Department not found
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+    put:
+      tags: [Application]
+      summary: Update a department (EXCLUSIVE TO ADMINISTRATORS)
+      description: Update a department (EXCLUSIVE TO ADMINISTRATORS)
+      requestBody:
+        description: Data for updating a department
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                name:
+                  description: The name of the department
+                  type: string
+                  example: Operations
+              required:
+                - name
+        required: true
+      responses:
+        '200':
+          description: Department updated successfully
+        '401':
+          description: Unauthenticated
+        '403':
+          description: Forbidden
+        '404':
+          description: Department not found
+        '422':
+          description: Validation errors
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+    delete:
+      tags: [Application]
+      summary: Delete a department (EXCLUSIVE TO ADMINISTRATORS)
+      description: Delete a department (EXCLUSIVE TO ADMINISTRATORS)
+      responses:
+        '200':
+          description: Department deleted successfully
+        '401':
+          description: Unauthenticated
+        '403':
+          description: Forbidden
+        '404':
+          description: Department not found
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/staff:
+    get:
+      tags: [Application]
+      summary: Get staff (EXCLUSIVE TO ADMINISTRATORS)
+      description: Get staff (EXCLUSIVE TO ADMINISTRATORS)
+      parameters:
+        - name: page
+          in: query
+          description: The current page
+          required: false
+          schema:
+            type: integer
+            example: 1
+        - name: per_page
+          in: query
+          description: The number of items to return per page (Default is 20)
+          required: false
+          schema:
+            type: integer
+            example: 15
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '403':
+          description: Forbidden
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+    post:
+      tags: [Application]
+      summary: Create a staff (EXCLUSIVE TO ADMINISTRATORS)
+      description: Create a staff (EXCLUSIVE TO ADMINISTRATORS)
+      requestBody:
+        description: Data for creating a staff
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                first_name:
+                  description: The first name of the staff
+                  type: string
+                  example: Oluyemi
+                last_name:
+                  description: The last name of the staff
+                  type: string
+                  example: Adebayo
+                email:
+                  description: The email of the staff
+                  type: string
+                  example: oluyemi.a@quickfundmfb.com
+                phone:
+                  description: The phone number of the staff
+                  type: string
+                  example: '08111111111'
+                password:
+                  description: The password of the staff
+                  type: string
+                  format: password
+                  example: password
+                password_confirmation:
+                  description: The password confirmation of the staff
+                  type: string
+                  format: password
+                  example: password
+                role_id:
+                  description: The ID of the role
+                  type: integer
+                  example: 1
+                department_id:
+                  description: The ID of the department
+                  type: integer
+                  example: 1
+              required:
+                - first_name
+                - last_name
+                - email
+                - phone
+                - password
+                - password_confirmation
+                - role_id
+                - department_id
+        required: true
+      responses:
+        '201':
+          description: Staff created successfully
+        '401':
+          description: Unauthenticated
+        '403':
+          description: Forbidden
+        '422':
+          description: Validation errors
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/staff/{userId}:
+    parameters:
+      - name: userId
+        in: path
+        description: The ID of the staff
+        required: true
+        schema:
+          type: integer
+          example: 1
+    get:
+      tags: [Application]
+      summary: Get a staff (EXCLUSIVE TO ADMINISTRATORS)
+      description: Get a staff (EXCLUSIVE TO ADMINISTRATORS)
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '403':
+          description: Forbidden
+        '404':
+          description: Staff not found
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+    put:
+      tags: [Application]
+      summary: Update a staff (EXCLUSIVE TO ADMINISTRATORS)
+      description: Update a staff (EXCLUSIVE TO ADMINISTRATORS)
+      requestBody:
+        description: Data for updating a staff
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                first_name:
+                  description: The first name of the staff
+                  type: string
+                  example: Oluyemi
+                last_name:
+                  description: The last name of the staff
+                  type: string
+                  example: Adebayo
+                email:
+                  description: The email of the staff
+                  type: string
+                  example: oluyemi.a@quickfundmfb.com
+                phone:
+                  description: The phone number of the staff
+                  type: string
+                  example: '08111111111'
+                password:
+                  description: The password of the staff
+                  type: string
+                  format: password
+                  example: password
+                password_confirmation:
+                  description: The password confirmation of the staff
+                  type: string
+                  format: password
+                  example: password
+                role_id:
+                  description: The ID of the role
+                  type: integer
+                  example: 1
+                department_id:
+                  description: The ID of the department
+                  type: integer
+                  example: 1
+              required:
+                - first_name
+                - last_name
+                - email
+                - phone
+                - password
+                - password_confirmation
+                - role_id
+                - department_id
+        required: true
+      responses:
+        '200':
+          description: Staff updated successfully
+        '401':
+          description: Unauthenticated
+        '403':
+          description: Forbidden
+        '404':
+          description: Staff not found
+        '422':
+          description: Validation errors
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+    delete:
+      tags: [Application]
+      summary: Delete a staff (EXCLUSIVE TO ADMINISTRATORS)
+      description: Delete a staff (EXCLUSIVE TO ADMINISTRATORS)
+      responses:
+        '200':
+          description: Staff deleted successfully
+        '401':
+          description: Unauthenticated
+        '403':
+          description: Forbidden
+        '404':
+          description: Staff not found
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+  /api/settings:
+    get:
+      tags: [Application]
+      summary: Get application settings (EXCLUSIVE TO ADMINISTRATORS)
+      description: Get application settings (EXCLUSIVE TO ADMINISTRATORS)
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+    post:
+      tags: [Application]
+      summary: Update application settings (EXCLUSIVE TO ADMINISTRATORS)
+      description: Update application settings (EXCLUSIVE TO ADMINISTRATORS)
+      requestBody:
+        description: Data for updating application settings
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                minimum_loan_amount:
+                  description: The minimum loan amount that can be borrowed (Value is in kobo)
+                  type: integer
+                  example: 500000
+                maximum_loan_amount:
+                  description: The maximum loan amount that can be borrowed (Value is in kobo)
+                  type: integer
+                  example: 20000000
+                loan_tenures[]:
+                  description: The possible tenures for loans (In days)
+                  type: array
+                  items:
+                    type: integer
+                    example: 14
+                percentage_increase_for_loyal_customers:
+                  description: The percentage loan amount increase for loyal customers
+                  type: number
+                  example: 50.4
+                loan_interest:
+                  description: The percentage interest applied on collected loans
+                  type: number
+                  example: 30.5
+                default_interest:
+                  description: The percentage interest applied on collected loans when a customer defaults on payment
+                  type: number
+                  example: 10.5
+                days_to_attach_late_payment_fees:
+                  description: The number of days after default date to add subsequent late payment fees
+                  type: integer
+                  example: 7
+                use_credit_score_check:
+                  description: Use credit score check when giving customers offers
+                  type: boolean
+                  example: true
+                use_crc_check:
+                  description: Use CRC check when giving customers offers
+                  type: boolean
+                  example: true
+                use_first_central_check:
+                  description: Use First Central check when giving customers offers
+                  type: boolean
+                  example: true
+                minimum_credit_score:
+                  description: The minimum credit score permitted to give loans to customers
+                  type: number
+                  example: 50
+                days_to_make_crc_check:
+                  description: The number of days to make CRC check on a customer
+                  type: integer
+                  example: 90
+                days_to_make_first_central_check:
+                  description: The number of days to make First Central check on a customer
+                  type: integer
+                  example: 90
+                total_amount_credited_per_day:
+                  description: The total loan amount given to customers per day (Value is in kobo)
+                  type: integer
+                  example: 50000000
+                maximum_amount_for_first_timers:
+                  description: The maximum amount that should be available for first timers (Value is in kobo)
+                  type: integer
+                  example: 500000
+                should_give_loans:
+                  description: Boolean checking if loans should be given by the platform at a given moment
+                  type: boolean
+                  example: true
+                emails_to_report[]:
+                  description: The emails to send reports to
+                  type: array
+                  items:
+                    type: string
+                    example: support@quickfundmfb.com
+                use_crc_credit_score_check:
+                  description: Use CRC credit score check when giving customers offers
+                  type: boolean
+                  example: true
+                use_first_central_credit_score_check:
+                  description: Use First Central credit score check when giving customers offers
+                  type: boolean
+                  example: true
+                minimum_credit_bureau_credit_score:
+                  description: The minimum credit score by credit bureaus to qualify for loans
+                  type: integer
+                  example: 500
+                maximum_outstanding_loans_to_qualify:
+                  description: The maximum outstanding loans to qualify for an offer
+                  type: integer
+                  example: 2
+                bucket_0_to_9:
+                  description: The highest first time offers for customer with credit scores 0 to 9
+                  type: integer
+                  example: 100000
+                bucket_10_to_19:
+                  description: The highest first time offers for customer with credit scores 10 to 19
+                  type: integer
+                  example: 100000
+                bucket_20_to_29:
+                  description: The highest first time offers for customer with credit scores 20 to 29
+                  type: integer
+                  example: 100000
+                bucket_30_to_39:
+                  description: The highest first time offers for customer with credit scores 30 to 39
+                  type: integer
+                  example: 100000
+                bucket_40_to_49:
+                  description: The highest first time offers for customer with credit scores 40 to 49
+                  type: integer
+                  example: 100000
+                bucket_50_to_59:
+                  description: The highest first time offers for customer with credit scores 50 to 59
+                  type: integer
+                  example: 100000
+                bucket_60_to_69:
+                  description: The highest first time offers for customer with credit scores 60 to 69
+                  type: integer
+                  example: 100000
+                bucket_70_to_79:
+                  description: The highest first time offers for customer with credit scores 70 to 79
+                  type: integer
+                  example: 100000
+                bucket_80_to_89:
+                  description: The highest first time offers for customer with credit scores 80 to 89
+                  type: integer
+                  example: 100000
+                bucket_90_to_100:
+                  description: The highest first time offers for customer with credit scores 90 to 100
+                  type: integer
+                  example: 100000
+                days_to_stop_penalty_from_accruing:
+                  description: The number of days penalty should stop accruing
+                  type: integer
+                  example: 60
+                minimum_days_for_demotion:
+                  description: The minimum number of days for demotion upon next loan request
+                  type: integer
+                  example: 30
+                maximum_days_for_demotion:
+                  description: The maximum number of days for demotion upon next loan request
+                  type: integer
+                  example: 90
+                days_to_blacklist_customer:
+                  description: The number of days a user will be blacklisted on default of previously collected loan
+                  type: integer
+                  example: 90
+              required:
+                - minimum_loan_amount
+                - maximum_loan_amount
+                - loan_tenures[]
+                - percentage_increase_for_loyal_customers
+                - loan_interest
+                - default_interest
+                - days_to_attach_late_payment_fees
+                - use_credit_score_check
+                - use_crc_check
+                - use_first_central_check
+                - minimum_credit_score
+                - days_to_make_crc_check
+                - days_to_make_first_central_check
+                - total_amount_credited_per_day
+                - maximum_amount_for_first_timers
+                - should_give_loans
+                - emails_to_report[]
+                - use_crc_credit_score_check
+                - use_first_central_credit_score_check
+                - minimum_credit_bureau_credit_score
+                - maximum_outstanding_loans_to_qualify
+                - bucket_0_to_9
+                - bucket_10_to_19
+                - bucket_20_to_29
+                - bucket_30_to_39
+                - bucket_40_to_49
+                - bucket_50_to_59
+                - bucket_60_to_69
+                - bucket_70_to_79
+                - bucket_80_to_89
+                - bucket_90_to_100
+                - days_to_stop_penalty_from_accruing
+                - minimum_days_for_demotion
+                - maximum_days_for_demotion
+                - days_to_blacklist_customer
+            encoding:
+              loan_tenures[]:
+                style: form
+              emails_to_report[]:
+                style: form
+        required: true
+      responses:
+        '200':
+          description: Settings updated
+        '401':
+          description: Unauthenticated
+        '422':
+          description: Validation errors
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    httpBearer:
+      type: http
+      description: Bearer token for authentication
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Envelope:
+      type: object
+      properties:
+        xmlns:ns2:
+          type: string
+          example: http://techquest.interswitchng.com/
+          xml:
+            attribute: true
+        xmlns:ns3:
+          type: string
+          example: http://techquest.interswitchng.com/nameenquiry/
+          xml:
+            attribute: true
+        Body:
+          type: object
+          properties:
+            NameEnquiry:
+              type: object
+              properties:
+                NameEnquiryRequest:
+                  type: object
+                  properties:
+                    CustomerID:
+                      type: string
+                      example: '1100022859'
+                      xml:
+                        prefix: ns3
+                  required:
+                    - CustomerID
+                  xml:
+                    prefix: ns3
+              required:
+                - NameEnquiryRequest
+              xml:
+                prefix: ns3
+          required:
+            - NameEnquiry
+          xml:
+            prefix: ns4
+      xml:
+        prefix: ns4
+        namespace: http://www.w3.org/2003/05/soap-envelope
