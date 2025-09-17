@@ -2,12 +2,23 @@
 
 namespace App\Services\CreditBureau;
 
-use Illuminate\Support\Facades\{Http, DB};
 use App\Contracts\CreditBureau;
 use App\Exceptions\CustomException;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\{Http, DB};
 
 class Crc implements CreditBureau
 {
+
+    protected string $reportBaseUrl;
+    protected string $reportUserId;
+
+    public function __construct()
+    {
+        $this->reportBaseUrl = 'https://files.creditreferencenigeria.net/crccreditbureau_Datasubmission_Webservice/JSON/api/';
+        $this->reportUserId = config('services.crc.reporting_userid', 'crcautomations');
+    }
+
     /**
      * Check if the credit bureau check passes
      */
@@ -26,9 +37,11 @@ class Crc implements CreditBureau
         /**
          * Check if a customer is whitelisted
          */
-        if ($customer->isWhitelistedManually() ||
-            $customer->isWhitelistedByCode()) {
-            return true; 
+        if (
+            $customer->isWhitelistedManually() ||
+            $customer->isWhitelistedByCode()
+        ) {
+            return true;
         }
 
         /**
@@ -91,33 +104,33 @@ class Crc implements CreditBureau
     public function basicRequest($bvn)
     {
         $response = Http::acceptJson()
-                        ->post(config('services.crc.url'), [
-                            'Request' => json_encode([
-                                '@REQUEST_ID' => '1',
-                                'REQUEST_PARAMETERS' => [
-                                    'REPORT_PARAMETERS' => [
-                                        '@REPORT_ID' => '7463',
-                                        '@SUBJECT_TYPE' => '1',
-                                        '@RESPONSE_TYPE' => '5' 
-                                    ],
-                                    'INQUIRY_REASON' => [
-                                        '@CODE' => '1',
-                                    ],
-                                    'APPLICATION' => [
-                                        '@PRODUCT' => '017',
-                                        '@NUMBER' => '232',
-                                        '@AMOUNT' => '15000',
-                                        '@CURRENCY' => 'NGN'
-                                    ]
-                                ],
-                                'SEARCH_PARAMETERS' => [
-                                    '@SEARCH-TYPE' => '4',
-                                    'BVN_NO' => $bvn
-                                ]
-                            ]),
-                            'UserName' => config('services.crc.username'),
-                            'Password' => config('services.crc.password')
-                        ]);
+            ->post(config('services.crc.url'), [
+                'Request' => json_encode([
+                    '@REQUEST_ID' => '1',
+                    'REQUEST_PARAMETERS' => [
+                        'REPORT_PARAMETERS' => [
+                            '@REPORT_ID' => '7463',
+                            '@SUBJECT_TYPE' => '1',
+                            '@RESPONSE_TYPE' => '5'
+                        ],
+                        'INQUIRY_REASON' => [
+                            '@CODE' => '1',
+                        ],
+                        'APPLICATION' => [
+                            '@PRODUCT' => '017',
+                            '@NUMBER' => '232',
+                            '@AMOUNT' => '15000',
+                            '@CURRENCY' => 'NGN'
+                        ]
+                    ],
+                    'SEARCH_PARAMETERS' => [
+                        '@SEARCH-TYPE' => '4',
+                        'BVN_NO' => $bvn
+                    ]
+                ]),
+                'UserName' => config('services.crc.username'),
+                'Password' => config('services.crc.password')
+            ]);
 
         $body = $response->json();
 
@@ -134,36 +147,36 @@ class Crc implements CreditBureau
     public function mergeRequest($responseBody)
     {
         $response = Http::acceptJson()
-                        ->post(config('services.crc.url'), [
-                            'Request' => json_encode([
-                                '@REQUEST_ID' => '1',
-                                'REQUEST_PARAMETERS' => [
-                                    'REPORT_PARAMETERS' => [
-                                        '@REPORT_ID' => '7463',
-                                        '@SUBJECT_TYPE' => '1',
-                                        '@RESPONSE_TYPE' => '5' 
-                                    ],
-                                    'INQUIRY_REASON' => [
-                                        '@CODE' => '1',
-                                    ],
-                                    'APPLICATION' => [
-                                        '@PRODUCT' => '001',
-                                        '@NUMBER' => '232',
-                                        '@AMOUNT' => '1000',
-                                        '@CURRENCY' => 'NGN'
-                                    ],
-                                    'REQUEST_REFERENCE' => [
-                                        '@REFERENCE-NO' => $responseBody['ConsumerSearchResultResponse']['REFERENCENO'],
-                                        'MERGE_REPORT' => [
-                                            '@PRIMARY-BUREAU-ID' => $responseBody['ConsumerSearchResultResponse']['BODY']['SEARCHRESULTLIST'][0]['BUREAUID'],
-                                            'BUREAU_ID' => collect($responseBody['ConsumerSearchResultResponse']['BODY']['SEARCHRESULTLIST'])->pluck('BUREAUID')->toArray()
-                                        ]
-                                    ]
-                                ]
-                            ]),
-                            'UserName' => config('services.crc.username'),
-                            'Password' => config('services.crc.password')
-                        ]);
+            ->post(config('services.crc.url'), [
+                'Request' => json_encode([
+                    '@REQUEST_ID' => '1',
+                    'REQUEST_PARAMETERS' => [
+                        'REPORT_PARAMETERS' => [
+                            '@REPORT_ID' => '7463',
+                            '@SUBJECT_TYPE' => '1',
+                            '@RESPONSE_TYPE' => '5'
+                        ],
+                        'INQUIRY_REASON' => [
+                            '@CODE' => '1',
+                        ],
+                        'APPLICATION' => [
+                            '@PRODUCT' => '001',
+                            '@NUMBER' => '232',
+                            '@AMOUNT' => '1000',
+                            '@CURRENCY' => 'NGN'
+                        ],
+                        'REQUEST_REFERENCE' => [
+                            '@REFERENCE-NO' => $responseBody['ConsumerSearchResultResponse']['REFERENCENO'],
+                            'MERGE_REPORT' => [
+                                '@PRIMARY-BUREAU-ID' => $responseBody['ConsumerSearchResultResponse']['BODY']['SEARCHRESULTLIST'][0]['BUREAUID'],
+                                'BUREAU_ID' => collect($responseBody['ConsumerSearchResultResponse']['BODY']['SEARCHRESULTLIST'])->pluck('BUREAUID')->toArray()
+                            ]
+                        ]
+                    ]
+                ]),
+                'UserName' => config('services.crc.username'),
+                'Password' => config('services.crc.password')
+            ]);
 
         $body = $response->json();
 
@@ -234,7 +247,7 @@ class Crc implements CreditBureau
         $body = $responseBody['ConsumerHitResponse']['BODY'];
         $header = $responseBody['ConsumerHitResponse']['HEADER'];
 
-        return DB::transaction(function() use ($body, $header, $customer, $setting) {
+        return DB::transaction(function () use ($body, $header, $customer, $setting) {
             $crc = $customer->crc()->updateOrCreate([], [
                 'summary_of_performance' => $body['SummaryOfPerformance'],
                 'bvn_report_detail' => $body['ReportDetailBVN'],
@@ -306,8 +319,10 @@ class Crc implements CreditBureau
 
         // Check if CRC credit score check should be used
         if ($useCrcCreditScoreCheck) {
-            if (isset($crc->credit_score_details) &&
-                ((int) $crc->credit_score_details['CREDIT_SCORE_SUMMARY']['CREDIT_SCORE'] < $minimumBureauCreditScore)) {
+            if (
+                isset($crc->credit_score_details) &&
+                ((int) $crc->credit_score_details['CREDIT_SCORE_SUMMARY']['CREDIT_SCORE'] < $minimumBureauCreditScore)
+            ) {
                 return false;
             }
         }
@@ -315,4 +330,58 @@ class Crc implements CreditBureau
         // Check to know if the customer passes CRC check
         return $maximumOutstandingLoansToQualify >= $crc->total_delinquencies;
     }
+
+    /**
+     * Report borrowers' personal info to CRC
+     */
+    public function reportIndividualBorrowersInformation($payload)
+    {
+        return $this->sendRequest('neIndividualborrower', $payload);
+    }
+
+    /**
+     * Report credit/loan info to CRC
+     */
+    public function reportCreditInformation($payload)
+    {
+        return $this->sendRequest('nECreditInfo', $payload);
+    }
+
+    /**
+     * Internal helper for making requests
+     */
+    protected function sendRequest(string $endpoint, $payload)
+    {
+        try {
+            $response = Http::asForm()->post(
+                $this->reportBaseUrl . $endpoint . '/',
+                [
+                    'payload' => is_string($payload) ? $payload : json_encode($payload),
+                    'userid' => $this->reportUserId,
+                ]
+            );
+
+            if ($response->failed()) {
+                Log::error("CRC API call to [{$endpoint}] failed", [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+            } else {
+                Log::info("CRC API call to [{$endpoint}] succeeded", [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+            }
+
+            return $response->json();
+        } catch (\Exception $e) {
+            Log::error("CRC API exception on [{$endpoint}]", [
+                'message' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+    }
+
+
 }

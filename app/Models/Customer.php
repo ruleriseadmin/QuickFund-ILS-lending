@@ -48,9 +48,20 @@ class Customer extends Model
     /**
      * The relationship with the Loan model
      */
+    // public function loans()
+    // {
+    //     return $this->hasMany(Loan::class);
+    // }
     public function loans()
     {
-        return $this->hasMany(Loan::class);
+        return $this->hasManyThrough(
+            Loan::class,       // Final related model
+            LoanOffer::class,  // Intermediate model
+            'customer_id',     // Foreign key on loan_offers table
+            'loan_offer_id',   // Foreign key on loans table
+            'id',              // Local key on customers table
+            'id'               // Local key on loan_offers table
+        );
     }
 
     /**
@@ -99,12 +110,17 @@ class Customer extends Model
     public function latestLoanOffer()
     {
         return $this->hasOne(LoanOffer::class)
-                    ->ofMany([
-                        'id' => 'max'
-                    ], fn($query) => $query->whereIn('status', [
-                                            LoanOffer::OPEN,
-                                            LoanOffer::CLOSED,
-                                            LoanOffer::OVERDUE
-                                        ]));
+            ->ofMany([
+                'id' => 'max'
+            ], fn($query) => $query->whereIn('status', [
+                    LoanOffer::OPEN,
+                    LoanOffer::CLOSED,
+                    LoanOffer::OVERDUE
+                ]));
+    }
+
+    public function getFormattedCustomerIdAttribute()
+    {
+        return str_pad($this->id, 10, '0', STR_PAD_LEFT);
     }
 }

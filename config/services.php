@@ -52,6 +52,7 @@ return [
         'url' => env('CRC_URL'),
         'username' => env('CRC_USERNAME'),
         'password' => env('CRC_PASSWORD'),
+        'reporting_userid' => env('CRC_REPORT_USERID'),
     ],
 
     'first_central' => [
