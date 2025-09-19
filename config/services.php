@@ -53,6 +53,7 @@ return [
         'username' => env('CRC_USERNAME'),
         'password' => env('CRC_PASSWORD'),
         'reporting_userid' => env('CRC_REPORT_USERID'),
+        'feedback_email' => env('CRC_FEEDBACK_EMAIL'),
     ],
 
     'first_central' => [

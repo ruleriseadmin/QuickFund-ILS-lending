@@ -2,9 +2,15 @@
 
 namespace App\Console\Commands;
 
+use Throwable;
 use App\Models\Customer;
+use Illuminate\Bus\Batch;
 use App\Jobs\ProcessCrcReport;
 use Illuminate\Console\Command;
+use App\Mail\CreditReportCompleted;
+use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class CrcReportCommand extends Command
 {
@@ -31,19 +37,55 @@ class CrcReportCommand extends Command
     {
         $batchSize = 400;
 
-        // dd([
-        //     "all" => Customer::count(),
-        //     "with_loan" => Customer::whereHas('loans')->count(),
-        // ]);
+        $totalCustomers = Customer::whereHas('loans')->count();
+
+        $batch = Bus::batch([])
+            ->then(function (Batch $batch) use ($totalCustomers) {
+                // Collect details for the email
+                $summary = [
+                    'batch_id' => $batch->id,
+                    'total_jobs' => $batch->totalJobs,
+                    'pending_jobs' => $batch->pendingJobs,
+                    'processed_jobs' => $batch->processedJobs(),
+                    'failed_jobs' => $batch->failedJobs,
+                    'total_customers' => $totalCustomers,
+                    'created_at' => now()->longRelativeToNowDiffForHumans(),
+                    // 'created_at' => now()->toDateTimeString(),
+                ];
+
+                // Only add "name" if it exists
+                // if (!empty($batch->name)) {
+                //     $summary['name'] = $batch->name;
+                // }
+    
+                Mail::to(config('services.crc.feedback_email', 'pugnac55@gmail.com'))
+                    ->send(new CreditReportCompleted($summary));
+            })
+            ->catch(function (Batch $batch, Throwable $e) {
+                // 🚨 Log failure
+                Log::error('Credit report batch failed', [
+                    'batch_id' => $batch->id,
+                    'name' => $batch->name,
+                    'total_jobs' => $batch->totalJobs,
+                    'failed_jobs' => $batch->failedJobs,
+                    'exception' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                ]);
 
 
-        Customer::whereHas('loans') // 👈 only customers with loans
-            ->chunk($batchSize, function ($customers) {
-                ProcessCrcReport::dispatch($customers);
-                // return false; // stop after first chunk (for testing)
+            })
+            ->dispatch();
+
+        Customer::whereHas('loans')
+            // ->take(100) // 👈 testing with 100 customers only
+            ->chunk($batchSize, function ($customers) use ($batch) {
+                $batch->add([
+                    new ProcessCrcReport($customers)
+                ]);
             });
 
         $this->info('Credit report jobs dispatched successfully.');
         return Command::SUCCESS;
     }
+
 }
