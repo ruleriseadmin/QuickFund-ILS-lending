@@ -48,10 +48,6 @@ class Customer extends Model
     /**
      * The relationship with the Loan model
      */
-    // public function loans()
-    // {
-    //     return $this->hasMany(Loan::class);
-    // }
     public function loans()
     {
         return $this->hasManyThrough(

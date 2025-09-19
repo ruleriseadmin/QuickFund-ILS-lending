@@ -29,11 +29,19 @@ class CrcReportCommand extends Command
      */
     public function handle()
     {
-        $batchSize = 200;
-        Customer::chunk($batchSize, function ($customers) {
-            ProcessCrcReport::dispatch($customers);
-            return false; // stop after first chunk, testing
-        });
+        $batchSize = 400;
+
+        // dd([
+        //     "all" => Customer::count(),
+        //     "with_loan" => Customer::whereHas('loans')->count(),
+        // ]);
+
+
+        Customer::whereHas('loans') // 👈 only customers with loans
+            ->chunk($batchSize, function ($customers) {
+                ProcessCrcReport::dispatch($customers);
+                // return false; // stop after first chunk (for testing)
+            });
 
         $this->info('Credit report jobs dispatched successfully.');
         return Command::SUCCESS;
