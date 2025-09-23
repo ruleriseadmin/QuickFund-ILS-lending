@@ -10,14 +10,6 @@ use Illuminate\Support\Facades\{Http, DB};
 class Crc implements CreditBureau
 {
 
-    protected string $reportBaseUrl;
-    protected string $reportUserId;
-
-    public function __construct()
-    {
-        $this->reportBaseUrl = 'https://files.creditreferencenigeria.net/crccreditbureau_Datasubmission_Webservice/JSON/api/';
-        $this->reportUserId = config('services.crc.reporting_userid', 'crcautomations');
-    }
 
     /**
      * Check if the credit bureau check passes
@@ -331,57 +323,6 @@ class Crc implements CreditBureau
         return $maximumOutstandingLoansToQualify >= $crc->total_delinquencies;
     }
 
-    /**
-     * Report borrowers' personal info to CRC
-     */
-    public function reportIndividualBorrowersInformation($payload)
-    {
-        return $this->sendRequest('neIndividualborrower', $payload);
-    }
-
-    /**
-     * Report credit/loan info to CRC
-     */
-    public function reportCreditInformation($payload)
-    {
-        return $this->sendRequest('nECreditInfo', $payload);
-    }
-
-    /**
-     * Internal helper for making requests
-     */
-    protected function sendRequest(string $endpoint, $payload)
-    {
-        try {
-            $response = Http::asForm()->post(
-                $this->reportBaseUrl . $endpoint . '/',
-                [
-                    'payload' => is_string($payload) ? $payload : json_encode($payload),
-                    'userid' => $this->reportUserId,
-                ]
-            );
-
-            if ($response->failed()) {
-                Log::error("CRC API call to [{$endpoint}] failed", [
-                    'status' => $response->status(),
-                    'body' => $response->body(),
-                ]);
-            } else {
-                Log::info("CRC API call to [{$endpoint}] succeeded", [
-                    'status' => $response->status(),
-                    'body' => $response->body(),
-                ]);
-            }
-
-            return $response->json();
-        } catch (\Exception $e) {
-            Log::error("CRC API exception on [{$endpoint}]", [
-                'message' => $e->getMessage(),
-            ]);
-
-            return null;
-        }
-    }
 
 
 }

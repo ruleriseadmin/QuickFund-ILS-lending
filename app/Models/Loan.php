@@ -27,6 +27,8 @@ class Loan extends Model
         'reference_id',
         'due_date',
         'next_due_date',
+        'first_central_reported_at',
+        'crc_reported_at',
         'defaults'
     ];
 
@@ -38,7 +40,9 @@ class Loan extends Model
     protected $casts = [
         'loan_offer_id' => 'integer',
         'due_date' => 'date:Y-m-d',
-        'next_due_date' => 'date:Y-m-d'
+        'next_due_date' => 'date:Y-m-d',
+        'first_central_reported_at' => 'datetime',
+        'crc_reported_at' => 'datetime',
     ];
 
     /**

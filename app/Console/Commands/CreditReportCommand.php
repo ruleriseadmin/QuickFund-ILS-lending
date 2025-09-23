@@ -11,15 +11,16 @@ use App\Mail\CreditReportCompleted;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use App\Jobs\ProcessFirstCentralReport;
 
-class CrcReportCommand extends Command
+class CreditReportCommand extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'crc:report';
+    protected $signature = 'credit:report';
 
     /**
      * The console command description.
@@ -35,7 +36,7 @@ class CrcReportCommand extends Command
      */
     public function handle()
     {
-        $batchSize = 400;
+        $batchSize = 100;
 
         $totalCustomers = Customer::whereHas('loans')->count();
 
@@ -49,16 +50,11 @@ class CrcReportCommand extends Command
                     'processed_jobs' => $batch->processedJobs(),
                     'failed_jobs' => $batch->failedJobs,
                     'total_customers' => $totalCustomers,
-                    'created_at' => now()->longRelativeToNowDiffForHumans(),
-                    // 'created_at' => now()->toDateTimeString(),
+                    // 'created_at' => now()->longRelativeToNowDiffForHumans(),
+                    'created_at' => now()->toDateTimeString(),
                 ];
 
-                // Only add "name" if it exists
-                // if (!empty($batch->name)) {
-                //     $summary['name'] = $batch->name;
-                // }
-    
-                Mail::to(config('services.crc.feedback_email', 'pugnac55@gmail.com'))
+                Mail::to(config('services.credit_report.feedback_email', 'pugnac55@gmail.com'))
                     ->send(new CreditReportCompleted($summary));
             })
             ->catch(function (Batch $batch, Throwable $e) {
@@ -80,7 +76,8 @@ class CrcReportCommand extends Command
             // ->take(100) // 👈 testing with 100 customers only
             ->chunk($batchSize, function ($customers) use ($batch) {
                 $batch->add([
-                    new ProcessCrcReport($customers)
+                    new ProcessCrcReport($customers),
+                    new ProcessFirstCentralReport($customers),
                 ]);
             });
 

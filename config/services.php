@@ -48,19 +48,27 @@ return [
         'default_currency_code' => '566'
     ],
 
+    'credit_report' => [
+        'feedback_email' => env('CRC_FEEDBACK_EMAIL'),
+    ],
+
     'crc' => [
         'url' => env('CRC_URL'),
         'username' => env('CRC_USERNAME'),
         'password' => env('CRC_PASSWORD'),
         'reporting_userid' => env('CRC_REPORT_USERID'),
-        'feedback_email' => env('CRC_FEEDBACK_EMAIL'),
     ],
+
+
 
     'first_central' => [
         'base_url' => env('FIRST_CENTRAL_BASE_URL'),
         'username' => env('FIRST_CENTRAL_USERNAME'),
         'password' => env('FIRST_CENTRAL_PASSWORD'),
-        'enquiry_reason' => env('FIRST_CENTRAL_ENQUIRY_REASON')
+        'enquiry_reason' => env('FIRST_CENTRAL_ENQUIRY_REASON'),
+        'reporting_base_url' => env('FIRST_CENTRAL_REPORTING_BASE_URL'),
+        'reporting_username' => env('FIRST_CENTRAL_REPORTING_USERNAME'),
+        'reporting_password' => env('FIRST_CENTRAL_REPORTING_PASSWORD'),
     ],
 
 ];
