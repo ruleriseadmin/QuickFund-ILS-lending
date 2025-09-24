@@ -10,6 +10,7 @@ use Illuminate\Console\Command;
 use App\Mail\CreditReportCompleted;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use App\Jobs\ProcessFirstCentralReport;
 
@@ -37,6 +38,24 @@ class CreditReportCommand extends Command
     public function handle()
     {
         $batchSize = 100;
+        // Step 1: Authenticate
+        $loginResponse = Http::post(config('services.first_central.reporting_base_url') . '/login', [
+            'username' => config('services.first_central.reporting_username'),
+            'password' => config('services.first_central.reporting_password'),
+        ]);
+
+        if (!$loginResponse->ok()) {
+            Log::error('FirstCentral login failed', [
+                'response' => $loginResponse->body()
+            ]);
+        }
+
+        $token = $loginResponse->json('0.DataTicket');
+        if (!$token) {
+            Log::error('FirstCentral token missing', [
+                'response' => $loginResponse->json(),
+            ]);
+        }
 
         $totalCustomers = Customer::whereHas('loans')->count();
 
@@ -73,13 +92,19 @@ class CreditReportCommand extends Command
             ->dispatch();
 
         Customer::whereHas('loans')
-            // ->take(100) // 👈 testing with 100 customers only
-            ->chunk($batchSize, function ($customers) use ($batch) {
-                $batch->add([
-                    new ProcessCrcReport($customers),
-                    new ProcessFirstCentralReport($customers),
-                ]);
+            ->chunk($batchSize, function ($customers) use ($batch, $token) {
+                foreach ($customers as $customer) {
+                    $jobs = [new ProcessCrcReport($customer)];
+
+                    // ✅ Only add FirstCentral job if token is present
+                    if ($token) {
+                        $jobs[] = new ProcessFirstCentralReport($customer, $token);
+                    }
+
+                    $batch->add($jobs);
+                }
             });
+
 
         $this->info('Credit report jobs dispatched successfully.');
         return Command::SUCCESS;

@@ -57,6 +57,8 @@ class OfferController extends Controller
         // Get the customer details
         $customerDetails = app()->make(InterswitchService::class)->customer($data['customerId']);
 
+        // dd($customerDetails);
+
         /**
          * We get the details of the customer or we create it
          */

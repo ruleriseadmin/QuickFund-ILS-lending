@@ -2,6 +2,8 @@
 
 namespace App\Services\CreditBureau;
 
+use App\Models\Loan;
+use App\Models\Customer;
 use App\Contracts\CreditBureau;
 use App\Exceptions\CustomException;
 use Illuminate\Support\Facades\Log;
@@ -9,7 +11,14 @@ use Illuminate\Support\Facades\{Http, DB};
 
 class Crc implements CreditBureau
 {
+    protected string $reportBaseUrl;
+    protected string $reportUserId;
 
+    public function __construct()
+    {
+        $this->reportBaseUrl = 'https://files.creditreferencenigeria.net/crccreditbureau_Datasubmission_Webservice/JSON/api/';
+        $this->reportUserId = config('services.crc.reporting_userid', 'crcautomations');
+    }
 
     /**
      * Check if the credit bureau check passes
@@ -324,5 +333,230 @@ class Crc implements CreditBureau
     }
 
 
+    public function reportCustomerLoans(Customer $customer): array
+    {
+        $results = [
+            'customer_id' => $customer->id,
+            'borrower' => null,
+            'loans' => [],
+        ];
+
+        // 🔹 Borrower info (Individual)
+        $borrowerPayload = $this->prepareBorrowerPayload($customer);
+        $borrowerResponse = $this->reportIndividualBorrowersInformation($borrowerPayload);
+        $results['borrower'] = $borrowerResponse;
+
+        // 🔹 Credit info (Loans)
+        $loanPayload = $this->prepareLoanPayload($customer);
+
+        if (empty($loanPayload)) {
+            Log::info("No new loans to report to CRC for customer {$customer->id}");
+            $results['loans'][] = [
+                'status' => 'skipped',
+                'message' => "No new loans to report for customer {$customer->id}",
+            ];
+            return $results;
+        }
+
+        // 🔹 Submit loans in chunks
+        collect($loanPayload)->chunk(20)->each(function ($chunk, $index) use ($customer, &$results) {
+            $loanIds = collect($chunk)->pluck('loan_id');
+
+            sleep(3);
+
+            // Prepare payload without loan_id
+            $cleanPayload = collect($chunk)->map(
+                fn($item) => collect($item)->except(['loan_id'])->toArray()
+            )->toArray();
+
+            $response = $this->reportCreditInformation($cleanPayload);
+
+            if (!$response || isset($response['error'])) {
+                Log::error("CRC upload failed for customer {$customer->id}, chunk {$index}", [
+                    'chunk_size' => $chunk->count(),
+                    'response' => $response,
+                ]);
+
+                $results['loans'][] = [
+                    'chunk' => $index,
+                    'status' => 'failed',
+                    'loan_ids' => $loanIds,
+                    'response' => $response,
+                ];
+            } else {
+                Loan::whereIn('id', $loanIds)->update([
+                    'crc_reported_at' => now(),
+                ]);
+
+                Log::info("CRC upload success for customer {$customer->id}, chunk {$index}", [
+                    'count' => $chunk->count(),
+                    'response' => $response,
+                ]);
+
+                $results['loans'][] = [
+                    'chunk' => $index,
+                    'status' => 'success',
+                    'loan_ids' => $loanIds,
+                    'response' => $response,
+                ];
+            }
+        });
+
+        return $results;
+    }
+
+
+    /**
+     * Prepare borrower payload for a single customer
+     */
+    public function prepareBorrowerPayload(Customer $customer): array
+    {
+        return [
+            'CustomerID' => $customer->formatted_customer_id,
+            'BranchCode' => $customer->branch_code ?? '01',
+            'Surname' => $customer->last_name ?: 'UNKNOWN',
+            'Firstname' => $customer->first_name ?: 'UNKNOWN',
+            'Middlename' => $customer->middle_name ?? '',
+            'DateofBirth' => $customer->date_of_birth
+                ? $customer->date_of_birth->format('d/m/Y')
+                : '01/01/1900',
+            'NationalIdentityNumber' => $customer->nin ?? '',
+            'DriversLicenseNo' => $customer->drivers_license ?? '',
+            'BVNNo' => $customer->bvn ?? '22231267698',
+            'PassportNo' => $customer->passport_no ?? '',
+            'Gender' => !empty($customer->gender) ? ucfirst($customer->gender) : 'Female',
+            'Nationality' => 'NIGERIA',
+            'MobileNumber' => $customer->phone_number ?? '',
+            'PrimaryAddressLine1' => $customer->address ?? 'UNKNOWN',
+            'PrimaryAddressLine2' => $customer->address2 ?? '',
+            'PrimarycityLGA' => $customer->city ?? 'UNKNOWN',
+            'PrimaryState' => $customer->state ?? 'UNKNOWN',
+            'PrimaryCountry' => 'NIGERIA',
+            'EmailAddress' => $customer->email ?? '',
+            'MaritalStatus' => $customer->marital_status ?? '',
+            'EmploymentStatus' => $customer->employment_status ?? 'UE',
+            'Occupation' => $customer->occupation ?? 'UNKNOWN',
+            'BusinessCategory' => $customer->business_category ?? 'General',
+            'BusinessSector' => $customer->business_sector ?? 'General',
+            'BorrowerType' => 'I',
+            'OtherID' => '',
+            'TaxID' => $customer->tax_id ?? '',
+            'PictureFilePath' => '',
+            'EmployerName' => $customer->employer_name ?? '',
+            'EmployerAddressLine1' => $customer->employer_address ?? '',
+            'EmployerAddressLine2' => $customer->employer_address2 ?? '',
+            'EmployerCity' => $customer->employer_city ?? '',
+            'EmployerState' => $customer->employer_state ?? '',
+            'EmployerCountry' => $customer->employer_country ?? '',
+            'Title' => $customer->title ?? '',
+            'PlaceOfBirth' => $customer->place_of_birth ?? '',
+            'WorkPhone' => $customer->work_phone ?? '',
+            'HomePhone' => $customer->home_phone ?? '',
+            'SecondaryAddressLine1' => $customer->secondary_address ?? '',
+            'SecondaryAddressLine2' => $customer->secondary_address2 ?? '',
+            'SecondarycityLGA' => $customer->secondary_city ?? '',
+            'SecondaryState' => $customer->secondary_state ?? '',
+            'SecondaryCountry' => $customer->secondary_country ?? '',
+            'SpousesSurname' => $customer->spouse_surname ?? '',
+            'SpousesFirstname' => $customer->spouse_firstname ?? '',
+            'SpousesMiddlename' => $customer->spouse_middlename ?? '',
+        ];
+    }
+
+    /**
+     * Prepare loan payload for a single customer
+     */
+    public function prepareLoanPayload(Customer $customer): array
+    {
+        return $customer->loans()
+            ->whereNull('crc_reported_at')
+            ->get()
+            ->map(function ($loan) use ($customer) {
+                return [
+                    'loan_id' => $loan->id,
+                    'CustomerID' => $customer->formatted_customer_id,
+                    'AccountNumber' => $loan->destination_account_number ?? '',
+                    'AccountStatus' => $loan->is_closed ? 'Closed' : 'Open',
+                    'AccountStatusDate' => now()->format('d/m/Y'),
+                    'DateOfLoanDisbursement' => $loan->created_at ? $loan->created_at->format('d/m/Y') : '',
+                    'CreditLimitAmount' => $loan->amount ?? 0,
+                    'LoanAmountAvailed' => $loan->amount_payable ?? 0,
+                    'OutstandingBalance' => $loan->amount_remaining ?? 0,
+                    'Currency' => 'NGN',
+                    'LoanType' => $loan->loan_type ?? 'Commercial Overdraft',
+                    'MaturityDate' => $loan->due_date ? $loan->due_date->format('d/m/Y') : '',
+                    'LoanClassification' => $loan->classification ?? 'Performing',
+                    'InstalmentAmount' => $loan->installment_amount ?? '',
+                    'DaysInArrears' => $loan->days_in_arrears ?? '0',
+                    'OverdueAmount' => $loan->overdue_amount ?? '0',
+                    'LoanTenor' => $loan->tenor ?? '',
+                    'RepaymentFrequency' => $loan->repayment_frequency ?? '',
+                    'LastPaymentDate' => $loan->last_payment_date ? $loan->last_payment_date->format('d/m/Y') : '',
+                    'LastPaymentAmount' => $loan->last_payment_amount ?? '',
+                    'LegalChallengeStatus' => '',
+                    'LitigationDate' => '',
+                    'ConsentStatus' => '',
+                    'LoanSecurityStatus' => $loan->secured ? 'YES' : 'NO',
+                    'CollateralType' => $loan->collateral_type ?? '',
+                    'CollateralDetails' => $loan->collateral_details ?? '',
+                    'PreviousAccountNumber' => '',
+                    'PreviousName' => '',
+                    'PreviousCustomerID' => '',
+                    'PreviousBranchCode' => '',
+                ];
+            })->toArray();
+    }
+
+    /**
+     * Report borrowers' personal info to CRC
+     */
+    public function reportIndividualBorrowersInformation($payload)
+    {
+        return $this->sendRequest('neIndividualborrower', $payload);
+    }
+
+    /**
+     * Report credit/loan info to CRC
+     */
+    public function reportCreditInformation($payload)
+    {
+        return $this->sendRequest('nECreditInfo', $payload);
+    }
+
+    /**
+     * Internal helper for making requests
+     */
+    protected function sendRequest(string $endpoint, $payload)
+    {
+        try {
+            $response = Http::asForm()->post(
+                $this->reportBaseUrl . $endpoint . '/',
+                [
+                    'payload' => json_encode($payload),
+                    'userid' => $this->reportUserId,
+                ]
+            );
+
+            if ($response->failed()) {
+                Log::error("CRC API call to [{$endpoint}] failed", [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+            } else {
+                Log::info("CRC API call to [{$endpoint}] succeeded", [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+            }
+
+            return $response->json();
+        } catch (\Exception $e) {
+            Log::error("CRC API exception on [{$endpoint}]", [
+                'message' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+    }
 
 }

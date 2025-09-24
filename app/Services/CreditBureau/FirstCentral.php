@@ -2,10 +2,13 @@
 
 namespace App\Services\CreditBureau;
 
-use Illuminate\Support\Facades\{Http, Cache, DB};
+use App\Models\Loan;
+use App\Models\Customer;
+use Illuminate\Support\Carbon;
 use App\Contracts\CreditBureau;
 use App\Exceptions\CustomException;
-use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\{Http, Cache, DB};
 
 class FirstCentral implements CreditBureau
 {
@@ -293,4 +296,170 @@ class FirstCentral implements CreditBureau
         // Check to know if the customer passes First Central check
         return $maximumOutstandingLoansToQualify >= $firstCentral->total_delinquencies;
     }
+    /**
+     * Map and submit customer loans to FirstCentral
+     */
+    public function reportCustomerLoans(Customer $customer, string $token): array
+    {
+        // Fetch only unreported loans for this customer
+        $loans = $customer->loans()
+            ->with('loanOffer')
+            ->whereNull('first_central_reported_at')
+            ->get();
+
+        $payload = $loans->map(function (Loan $loan) use ($customer) {
+            return [
+                "loan_id" => $loan->id,
+                "CUSTOMERID" => $customer->formatted_customer_id,
+                "BRANCHCODE" => $customer->bank_code ?? "",
+                "SURNAME" => $customer->last_name ?? "",
+                "FIRSTNAME" => $customer->first_name ?? "",
+                "MIDDLENAME" => null,
+                "DATEOFBIRTH" => optional($customer->date_of_birth)->format('Ymd'),
+                "NATIONALIDENTITYNUMBER" => "",
+                "DRIVERSLICENSENUMBER" => "",
+                "BVNNUMBER" => $customer->bvn ?? "",
+                "PASSPORTNUMBER" => "",
+                "PENCOMIDNUMBER" => "",
+                "OTHERID" => "",
+                "GENDER" => $customer->gender ?? "",
+                "NATIONALITY" => $customer->country_code ?? "Nigeria",
+                "MARITALSTATUS" => "",
+                "MOBILENUMBER" => $customer->phone_number ?? "",
+                "PRIMARYADDRESSLINE1" => $customer->address ?? "",
+                "PRIMARYADDRESSLINE2" => "",
+                "PRIMARYADDRESSCITY" => $customer->city ?? "",
+                "PRIMARYADDRESSSTATE" => $customer->state ?? "",
+                "PRIMARYADDRESSCOUNTRY" => $customer->country_code ?? "Nigeria",
+                "PRIMARYADDRESSPOSTCODE" => "",
+                "EMPLOYMENTSTATUS" => "",
+                "OCCUPATION" => "",
+                "BUSINESSCATEGORY" => "",
+                "BUSINESSSECTOR" => "",
+                "BORROWERTYPE" => "Individual",
+                "TAXID" => "",
+                "PICTUREFILEPATH" => "",
+                "EMAILADDRESS" => $customer->email ?? "",
+                "EMPLOYERNAME" => "",
+                "EMPLOYERADDRESSLINE1" => "",
+                "EMPLOYERADDRESSLINE2" => "",
+                "EMPLOYERCITY" => "",
+                "EMPLOYERSTATE" => "",
+                "EMPLOYERCOUNTRY" => "",
+                "TITLE" => "",
+                "PLACEOFBIRTH" => "",
+                "WORKTELEPHONE" => "",
+                "HOMETELEPHONE" => "",
+                "SECONDARYADDRESSLINE1" => "",
+                "SECONDARYADDRESSLINE2" => "",
+                "SECONDARYADDRESSCITYLGA" => "",
+                "SECONDARYADDRESSSTATE" => "",
+                "SECONDARYADDRESSCOUNTRY" => "",
+                "SECONDARYADDRESSPOSTCODE" => "",
+                "SPOUSESURNAME" => "",
+                "SPOUSEFIRSTNAME" => "",
+                "SPOUSEMIDDLENAME" => "",
+                "ACCOUNTNUMBER" => $loan->destination_account_number ?? $customer->account_number ?? "",
+                "ACCOUNTSTATUS" => in_array($loan->loanOffer?->status, [\App\Models\LoanOffer::OPEN, \App\Models\LoanOffer::OVERDUE]) ? "1" : "0",
+                "ACCOUNTSTATUSDATE" => optional($loan->due_date)->format('Ymd'),
+                "LOANEFFECTIVEDATE" => optional($loan->created_at)->format('Ymd'),
+                "DEFEREDPAYMENTDATE" => "",
+                "CREDITLIMIT" => "0",
+                "AVAILEDLIMIT" => "0",
+                "OUTSTANDINGBALANCE" => $loan->amount_remaining ?? 0,
+                "CURRENTBALANCEDEBITIND" => "",
+                "INSTALMENTAMOUNT" => "0",
+                "CURRENCY" => "NGN",
+                "DAYSINARREARS" => $loan->days_in_arrears ?? 0,
+                "OVERDUEAMOUNT" => $loan->defaults ?? 0,
+                "FACILITYTYPE" => "Personal Loan",
+                "FACILITYTENOR" => $loan->loanOffer?->tenure ?? 0,
+                "FACILITYOWNERSHIPTYPE" => "",
+                "REPAYMENTFREQUENCY" => "Monthly",
+                "LASTPAYMENTDATE" => optional($loan->next_due_date)->format('Ymd'),
+                "LASTPAYMENTAMOUNT" => "0",
+                "MATURITYDATE" => optional($loan->due_date)->format('Ymd'),
+                "INCOME" => "",
+                "INCOMEFREQUENCY" => "",
+                "OWNERTENANT" => "",
+                "NUMBEROFPARTICIPANTSINJOINTLOAN" => "",
+                "DEPENDANTS" => "",
+                "LOANCLASSIFICATION" => ($loan->defaults > 0 ? "Lost" : "Performing"),
+                "LEGALCHALLENGESTATUS" => "NO",
+                "LITIGATIONDATE" => "",
+                "CONSENTSTATUS" => "YES",
+                "LOANSECURITYSTATUS" => "NO",
+                "COLLATERALTYPE" => "",
+                "COLLATERALDETAILS" => "",
+                "PREVIOUSACCOUNTNUMBER" => "",
+                "PREVIOUSNAME" => "",
+                "PREVIOUSCUSTOMERID" => "",
+                "PREVIOUSBRANCHCODE" => "",
+                "CUSTOMERSACCOUNTNUMBER" => "",
+                "GUARANTEESTATUSOFLOAN" => "",
+                "TYPEOFGUARANTEE" => "",
+                "NAMEOFCORPORATEGUARANTOR" => "",
+                "BIZIDNUMBEROFCORPORATEGUARANTOR" => "",
+                "INDIVIDUALGUARANTORSURNAME" => "",
+                "INDIVIDUALGUARANTORFIRSTNAME" => "",
+                "INDIVIDUALGUARANTORMIDDLENAME" => "",
+                "GUARANTORDATEOFBIRTHINCORPORATION" => "",
+                "GUARANTORGENDER" => "",
+                "GUARANTORNATIONALIDNUMBER" => "",
+                "GUARANTORINTLPASSPORTNUMBER" => "",
+                "GUARANTORDRIVERSLICENCENUMBER" => "",
+                "GUARANTORBVN" => "",
+                "GUARANTOROTHERID" => "",
+                "GUARANTORPRIMARYADDRESSLINE1" => "",
+                "GUARANTORPRIMARYADDRESSLINE2" => "",
+                "GUARANTORPRIMARYADDRESSCITYLGA" => "",
+                "GUARANTORPRIMARYADDRESSSTATE" => "",
+                "GUARANTORPRIMARYADDRESSCOUNTRY" => "",
+                "GUARANTORPRIMARYPHONENUMBER" => "",
+                "GUARANTOREMAIL" => "",
+            ];
+        })->values()->toArray();
+
+        if (empty($payload)) {
+            return [
+                'success' => false,
+                'message' => "No new loans to report for this customer.",
+            ];
+        }
+
+        // Process in chunks of 20
+        collect($payload)->chunk(20)->each(function ($chunk, $index) use ($token) {
+            $loanIds = collect($chunk)->pluck('loan_id');
+
+            sleep(3);
+
+            $cleanPayload = collect($chunk)->map(fn($item) => collect($item)->except(['loan_id'])->toArray())->toArray();
+
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+            ])->post(config('services.first_central.reporting_base_url') . '/uploadjson', $cleanPayload);
+
+            if ($response->failed()) {
+                Log::error("FirstCentral upload failed for customer loans, chunk {$index}", [
+                    'chunk_size' => $chunk->count(),
+                    'response' => $response->body(),
+                ]);
+            } else {
+                Loan::whereIn('id', $loanIds)->update([
+                    'first_central_reported_at' => now(),
+                ]);
+
+                Log::info("FirstCentral upload success for customer loans, chunk {$index}", [
+                    'count' => $chunk->count(),
+                    'response' => $response->json(),
+                ]);
+            }
+        });
+
+        return [
+            'success' => true,
+            'message' => "Loans reported successfully for customer {$customer->id}.",
+        ];
+    }
+
 }
