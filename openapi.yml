@@ -315,21 +315,21 @@ paths:
                   description: The destination bank code
                   type: string
                   example: '011'
-                token:
-                  description: The payment card token
-                  type: string
-                  example: '5123450558220138603'
                 loanReferenceId:
                   description: Unique identifier assigned to a loan
                   type: string
                   example: 'XYZ123465262646469476276572726'
+                token:
+                  description: The payment card token
+                  type: string
+                  example: '5123450558220138603'
               required:
                 - customerId
                 - offerId
                 - destinationAccountNumber
                 - destinationBankCode
-                - token
                 - loanReferenceId
+                # - token
         required: true
       responses:
         '200':

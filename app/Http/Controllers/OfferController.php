@@ -341,7 +341,7 @@ class OfferController extends Controller
                 ])->totalPayable($loanOffer->interest)->getValue(),
                 'destination_account_number' => $data['destinationAccountNumber'],
                 'destination_bank_code' => $data['destinationBankCode'],
-                'token' => $data['token'],
+                'token' => $data['token'] ?? "",
                 'reference_id' => $data['loanReferenceId'],
                 'due_date' => now()->addDays($loanOffer->tenure + 1)
             ]);
