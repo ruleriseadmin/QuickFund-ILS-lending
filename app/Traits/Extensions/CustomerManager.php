@@ -20,9 +20,6 @@ trait CustomerManager
      */
     public function getOffers($amount = null, $channelCode = null)
     {
-        // if (isset($amount)) {
-
-        // }
 
         /**
          * Get the application settings
