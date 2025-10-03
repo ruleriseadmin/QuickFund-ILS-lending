@@ -304,7 +304,7 @@ class CustomerController extends Controller
                 }
 
                 // Make the request to get the customer details from CRC
-                $basicRequestBody = app()->make(CrcService::class)->basicRequest($customer->bvn);
+                $basicRequestBody = app()->make(CrcService::class)->basicRequest($customer->bvn, $customer->id);
 
                 // Check to see if the CRC basic request failed
                 if (app()->make(CrcService::class)->failedRequest($basicRequestBody)) {
@@ -364,7 +364,7 @@ class CustomerController extends Controller
             $dataTicket = app()->make(FirstCentralService::class)->dataTicket();
 
             // Make the request to get the customer details from their BVN
-            $consumerMatchRequestBody = app()->make(FirstCentralService::class)->connectConsumerMatchRequest($customer->bvn, $dataTicket);
+            $consumerMatchRequestBody = app()->make(FirstCentralService::class)->connectConsumerMatchRequest($customer->bvn, $dataTicket, $customer->id);
 
             // Check to know if First Central consumer exists
             if (!app()->make(FirstCentralService::class)->consumerExists($consumerMatchRequestBody)) {

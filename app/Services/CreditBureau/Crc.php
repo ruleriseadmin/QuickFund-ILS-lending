@@ -3,6 +3,7 @@
 namespace App\Services\CreditBureau;
 
 use App\Models\Loan;
+use App\Models\CheckCrc;
 use App\Models\Customer;
 use App\Contracts\CreditBureau;
 use App\Exceptions\CustomException;
@@ -65,7 +66,7 @@ class Crc implements CreditBureau
         }
 
         // Make the request to get the customer details from CRC
-        $basicRequestBody = $this->basicRequest($customer->bvn);
+        $basicRequestBody = $this->basicRequest($customer->bvn, $customer->id);
 
         // Check to know if the CRC request returned a consumer no hit response
         if ($this->requestIsConsumerNoHit($basicRequestBody)) {
@@ -102,7 +103,7 @@ class Crc implements CreditBureau
     /**
      * CRC basic request to get customer details based on BVN
      */
-    public function basicRequest($bvn)
+    public function basicRequest($bvn, $customer_id = null)
     {
         $response = Http::acceptJson()
             ->post(config('services.crc.url'), [
@@ -139,6 +140,7 @@ class Crc implements CreditBureau
             throw new CustomException('CRC basic check failed.', 503);
         }
 
+        CheckCrc::createCheck($customer_id, $bvn, $body);
         return $body;
     }
 

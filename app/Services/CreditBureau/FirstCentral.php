@@ -6,6 +6,7 @@ use App\Models\Loan;
 use App\Models\Customer;
 use Illuminate\Support\Carbon;
 use App\Contracts\CreditBureau;
+use App\Models\CheckFirstCentral;
 use App\Exceptions\CustomException;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\{Http, Cache, DB};
@@ -59,7 +60,7 @@ class FirstCentral implements CreditBureau
         $dataTicket = $this->dataTicket();
 
         // Make the request to get the customer details from their BVN
-        $consumerMatchRequestBody = $this->connectConsumerMatchRequest($customer->bvn, $dataTicket);
+        $consumerMatchRequestBody = $this->connectConsumerMatchRequest($customer->bvn, $dataTicket, $customer->id);
 
         // Check to know if First Central consumer exists
         if (!$this->consumerExists($consumerMatchRequestBody)) {
@@ -132,7 +133,7 @@ class FirstCentral implements CreditBureau
     /**
      * Connect consumer match request
      */
-    public function connectConsumerMatchRequest($bvn, $dataTicket)
+    public function connectConsumerMatchRequest($bvn, $dataTicket, $customer_id = null)
     {
         $response = Http::withOptions([
             'base_uri' => config('services.first_central.base_url'),
@@ -152,7 +153,7 @@ class FirstCentral implements CreditBureau
         if ($response->failed()) {
             throw new CustomException('First Central connect consumer match request failed.', 503);
         }
-
+        CheckFirstCentral::createCheck($customer_id, $bvn, $body);
         return $body;
     }
 
