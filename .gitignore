@@ -12,3 +12,7 @@ yarn-error.log
 /.vscode
 /vendor
 auth.json
+
+# Environment files
+.env
+.env.*
