@@ -261,6 +261,11 @@ Route::middleware([
                 Route::get('/report', [CrcController::class, 'report'])
                     ->name('.report')
                     ->middleware('ability:crc-reports');
+
+                Route::get('/bureau-check-reports', [CrcController::class, 'bureauCheckReports'])
+                    ->name('.bureauCheckReports')
+                    ->middleware('ability:crc-reports');
+
             });
 
         Route::name('first-centrals')
@@ -272,6 +277,10 @@ Route::middleware([
 
                 Route::get('/report', [FirstCentralController::class, 'report'])
                     ->name('.report')
+                    ->middleware('ability:first-central-reports');
+
+                Route::get('/bureau-check-reports', [FirstCentralController::class, 'bureauCheckReports'])
+                    ->name('.bureauCheckReports')
                     ->middleware('ability:first-central-reports');
             });
 

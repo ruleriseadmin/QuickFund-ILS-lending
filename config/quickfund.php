@@ -111,7 +111,7 @@ return [
     | defaults
     |
     */
-    
+
     'default_interest' => 10,
 
     /*

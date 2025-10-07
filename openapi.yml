@@ -2306,6 +2306,69 @@ paths:
                 type: object
       security:
         - httpBearer: []
+  /api/crcs/bureau-check-reports:
+    get:
+      tags: [Application]
+      summary: Get CRC Bureau Check Reports (requires the permissions "crcs" AND "crc-reports" for a staff)
+      description: >
+        Retrieve CRC check reports recorded in the system.  
+        This endpoint fetches data from the `checks_crc` table and returns a paginated list of CRC check responses.
+        Requires the permissions **"crcs"** AND **"crc-reports"** for a staff user.
+      parameters:
+        - name: from_date
+          in: query
+          description: The date to search from (format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-01-01'
+        - name: to_date
+          in: query
+          description: The date to search to (format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-12-31'
+        - name: bvn
+          in: query
+          description: Filter by BVN
+          required: false
+          schema:
+            type: string
+            example: '22334455667'
+        - name: page
+          in: query
+          description: The current page number
+          required: false
+          schema:
+            type: integer
+            example: 1
+        - name: per_page
+          in: query
+          description: Number of items to return per page (Default is 20)
+          required: false
+          schema:
+            type: integer
+            example: 20
+      responses:
+        '200':
+          description: Request successful
+        '401':
+          description: Unauthenticated
+        '403':
+          description: Forbidden — Missing required ability ("crc-reports")
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
   /api/crc-histories:
     get:
       tags: [Application]
@@ -2462,6 +2525,75 @@ paths:
                 type: object
       security:
         - httpBearer: []
+  /api/first-centrals/bureau-check-reports:
+    get:
+      tags: [Application]
+      summary: Generate First Central Bureau Check Report (requires the permissions "first-centrals" AND "first-central-reports" for a staff)
+      description: |
+        Generate a summary report of First Central Bureau checks within a specific date range.
+        <br><br>
+        **Permissions required:**  
+        - `first-centrals`  
+        - `first-central-reports`
+      parameters:
+        - name: from_date
+          in: query
+          description: The start date to generate the report from (format: "YYYY-MM-DD")
+          required: true
+          schema:
+            type: string
+            format: date
+            example: '2024-01-01'
+        - name: to_date
+          in: query
+          description: The end date to generate the report to (format: "YYYY-MM-DD")
+          required: true
+          schema:
+            type: string
+            format: date
+            example: '2024-12-31'
+        - name: customer_id
+          in: query
+          description: Filter the report by a specific customer ID (optional)
+          required: false
+          schema:
+            type: integer
+            example: 1023
+        - name: bvn
+          in: query
+          description: Filter the report by a specific BVN (optional)
+          required: false
+          schema:
+            type: string
+            example: '22233445567'
+        - name: report_type
+          in: query
+          description: Type of report to generate (summary or detailed)
+          required: false
+          schema:
+            type: string
+            enum:
+              - "summary"
+              - "detailed"
+            example: "summary"
+      responses:
+        '200':
+          description: Report generated successfully
+        '401':
+          description: Unauthenticated
+        '403':
+          description: Forbidden — missing required permission
+        '500':
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status codes
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+
   /api/first-central-histories:
     get:
       tags: [Application]

@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Carbon;
-use App\Http\Requests\{IndexFirstCentralRequest, ReportFirstCentralRequest, StoreFirstCentralRequest, UpdateFirstCentralRequest};
 use App\Models\FirstCentral;
+use Illuminate\Support\Carbon;
+use App\Models\CheckFirstCentral;
+use App\Http\Requests\BureauCheckReportRequest;
+use App\Http\Requests\{IndexFirstCentralRequest, ReportFirstCentralRequest, StoreFirstCentralRequest, UpdateFirstCentralRequest};
 
 class FirstCentralController extends Controller
 {
@@ -20,12 +22,12 @@ class FirstCentralController extends Controller
         $perPage = $request->query('per_page') ?? config('quickfund.per_page');
 
         $firstCentrals = FirstCentral::with(['customer'])
-                                    ->when($data['from_date'] ?? null, fn($query, $value) => $query->where('updated_at', '>=', Carbon::parse($value)->startOfDay()->timezone(config('quickfund.date_query_timezone'))->toDateTimeString()))
-                                    ->when($data['to_date'] ?? null, fn($query, $value) => $query->where('updated_at', '<=', Carbon::parse($value)->endOfDay()->timezone(config('quickfund.date_query_timezone'))->toDateTimeString()))
-                                    ->when($data['delinquencies'] ?? null, fn($query, $value) => $query->where('total_delinquencies', $value))
-                                    ->when($data['passes_check'] ?? null, fn($query, $value) => $query->where('passes_recent_check', $value))
-                                    ->latest()
-                                    ->paginate($perPage);
+            ->when($data['from_date'] ?? null, fn($query, $value) => $query->where('updated_at', '>=', Carbon::parse($value)->startOfDay()->timezone(config('quickfund.date_query_timezone'))->toDateTimeString()))
+            ->when($data['to_date'] ?? null, fn($query, $value) => $query->where('updated_at', '<=', Carbon::parse($value)->endOfDay()->timezone(config('quickfund.date_query_timezone'))->toDateTimeString()))
+            ->when($data['delinquencies'] ?? null, fn($query, $value) => $query->where('total_delinquencies', $value))
+            ->when($data['passes_check'] ?? null, fn($query, $value) => $query->where('passes_recent_check', $value))
+            ->latest()
+            ->paginate($perPage);
 
         return $this->sendSuccess(__('app.request_successful'), 200, $firstCentrals);
     }
@@ -126,5 +128,25 @@ class FirstCentralController extends Controller
         // }
 
         // return Excel::download(new CrcReport($loans), "{$filename}.xlsx");
+    }
+
+    public function bureauCheckReports(BureauCheckReportRequest $request)
+    {
+        $perPage = $request->query('per_page', config('quickfund.per_page', 15));
+
+        $checks = CheckFirstCentral::query()
+            ->when($request->filled('from_date'), function ($query) use ($request) {
+                $query->where('timestamp', '>=', \Carbon\Carbon::parse($request->from_date)->startOfDay());
+            })
+            ->when($request->filled('to_date'), function ($query) use ($request) {
+                $query->where('timestamp', '<=', \Carbon\Carbon::parse($request->to_date)->endOfDay());
+            })
+            ->when($request->filled('bvn'), function ($query) use ($request) {
+                $query->where('bvn', $request->bvn);
+            })
+            ->latest('timestamp')
+            ->paginate($perPage);
+
+        return $this->sendSuccess(__('app.request_successful'), 200, $checks);
     }
 }

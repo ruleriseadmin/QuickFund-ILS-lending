@@ -49,7 +49,7 @@ return [
     ],
 
     'credit_report' => [
-        'feedback_email' => env('CRC_FEEDBACK_EMAIL'),
+        'feedback_email' => env('REPORTING_FEEDBACK_EMAIL'),
     ],
 
     'crc' => [
