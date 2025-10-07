@@ -33,6 +33,7 @@ class LoanOffer extends Model
         'tenure',
         'currency',
         'expiry_date',
+        'test',
         'default_fees_addition_days',
         'channel_code'
     ];
@@ -51,6 +52,7 @@ class LoanOffer extends Model
         'interest' => 'float',
         'default_interest' => 'float',
         'tenure' => 'integer',
+        'test' => 'boolean',
         'default_fees_addition_days' => 'integer'
     ];
 
