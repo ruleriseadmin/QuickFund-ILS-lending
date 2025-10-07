@@ -1,28 +1,48 @@
 #!/usr/bin/env bash
+set -e
+set -o pipefail
 
-# Change the permission for the storage folder to allow logging
-sudo chmod -R 777 storage
+echo "🚀 Starting production deployment..."
 
-# Change the permission for the vendor folder to allow laravel sail to be used
-sudo chmod -R 777 vendor
+# 1. Pull latest code
+echo "🔄 Updating codebase..."
+git fetch origin main
+git reset --hard origin/main
 
-# Kill the running containers
+# 2. Fix permissions
+echo "🔧 Setting folder permissions..."
+sudo chown -R www-data:www-data storage bootstrap/cache
+sudo chmod -R 755 storage bootstrap/cache
+
+# 3. Stop running containers
+echo "🧹 Stopping old containers..."
 ./vendor/bin/sail -f docker-compose.staging.yml down --remove-orphans
 
-# Run the production script to set up production mode
+# 4. Switch to production mode
+echo "⚙️ Setting environment to production..."
 ./scripts/production.sh
 
-# Restart containers
+# 5. Build and start containers
+echo "🐳 Starting Docker containers..."
 ./vendor/bin/sail -f docker-compose.staging.yml up --scale app=4 -d
 
-# Install dependencies. (This already exists so we will sort this out very soon)
-./vendor/bin/sail composer install --optimize-autoloader
+# 6. Install dependencies
+echo "📦 Installing dependencies..."
+./vendor/bin/sail composer install --optimize-autoloader --no-dev
 
-# Clear all old application configuration cache
+# 7. Clear & rebuild caches
+echo "🧹 Optimizing application..."
 ./vendor/bin/sail artisan optimize:clear
-
-# Cache application with new configuration
 ./vendor/bin/sail artisan optimize
 
-# Run migrations
+# 8. Run migrations
+echo "🗄️ Running database migrations..."
 ./vendor/bin/sail artisan migrate --force
+
+# 9. Restart Horizon
+echo "⚡ Restarting Horizon..."
+./vendor/bin/sail artisan horizon:terminate || true
+
+echo "✅ Deployment complete!"
+
+

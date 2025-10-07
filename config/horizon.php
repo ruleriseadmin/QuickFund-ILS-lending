@@ -223,4 +223,6 @@ return [
             ],
         ],
     ],
+
+    'key' => env('HORIZON_KEY'),
 ];
