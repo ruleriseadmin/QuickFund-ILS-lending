@@ -16,3 +16,5 @@ auth.json
 # Environment files
 .env
 .env.*
+
+cronjob.log

@@ -98,7 +98,7 @@ class CreditReportCommand extends Command
 
                     // ✅ Only add FirstCentral job if token is present
                     if ($token) {
-                        $jobs[] = new ProcessFirstCentralReport($customer, $token);
+                        // $jobs[] = new ProcessFirstCentralReport($customer, $token);
                     }
 
                     $batch->add($jobs);
