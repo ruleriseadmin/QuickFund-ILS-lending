@@ -11,7 +11,7 @@ git reset --hard origin/main
 
 # 2. Fix permissions
 echo "🔧 Setting folder permissions..."
-sudo chown -R www-data:www-data storage bootstrap/cache
+# sudo chown -R www-data:www-data storage bootstrap/cache
 sudo chmod -R 755 storage bootstrap/cache
 
 # 3. Stop running containers
