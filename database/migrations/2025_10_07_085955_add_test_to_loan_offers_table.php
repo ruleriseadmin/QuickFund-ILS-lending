@@ -13,7 +13,7 @@ return new class extends Migration {
     public function up()
     {
         Schema::table('loan_offers', function (Blueprint $table) {
-            $table->boolean('test')->default(false)->after('channel_code');
+            $table->boolean('is_test')->default(false)->after('channel_code');
         });
     }
 
@@ -25,7 +25,7 @@ return new class extends Migration {
     public function down()
     {
         Schema::table('loan_offers', function (Blueprint $table) {
-            $table->dropColumn('test');
+            $table->dropColumn('is_test');
         });
     }
 };

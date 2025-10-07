@@ -4,7 +4,7 @@ namespace App\Traits\Extensions;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\{Carbon, Arr};
-use App\Models\{Blacklist, Offer, LoanOffer, Setting, Whitelist};
+use App\Models\{Blacklist, Offer, LoanOffer, Setting, Whitelist, TestList};
 use App\Exceptions\Interswitch\{BlacklistedException, CustomerIneligibleException, NoOfferException};
 use App\Services\Phone\Nigeria as NigerianPhone;
 use App\Services\CreditBureau\{
@@ -90,6 +90,11 @@ trait CustomerManager
 
             return $this->loanOffers()->createMany($loanOffers->toArray());
         });
+
+        // ✅ Filter out test offers if customer is not in test list
+        if (!$this->isInTestList()) {
+            $offers = $offers->where('is_test', false);
+        }
 
         return $offers;
     }
@@ -575,6 +580,14 @@ trait CustomerManager
         }
 
         return true;
+    }
+
+    /**
+     * Check if a customer is in the test list
+     */
+    public function isInTestList(): bool
+    {
+        return TestList::where('phone_number', app()->make(NigerianPhone::class)->convert($this->phone_number))->exists();
     }
 
 }
