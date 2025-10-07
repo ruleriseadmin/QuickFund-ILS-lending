@@ -2538,44 +2538,41 @@ paths:
       parameters:
         - name: from_date
           in: query
-          description: The start date to generate the report from (format: "YYYY-MM-DD")
-          required: true
+          description: The date to search from (format "YYYY-MM-DD")
+          required: false
           schema:
             type: string
             format: date
-            example: '2024-01-01'
+            example: '2022-01-01'
         - name: to_date
           in: query
-          description: The end date to generate the report to (format: "YYYY-MM-DD")
-          required: true
+          description: The date to search to (format "YYYY-MM-DD")
+          required: false
           schema:
             type: string
             format: date
-            example: '2024-12-31'
-        - name: customer_id
+            example: '2022-12-31'
+        - name: bvn
           in: query
-          description: Filter the report by a specific customer ID (optional)
+          description: Filter by BVN
+          required: false
+          schema:
+            type: string
+            example: '22334455667'
+        - name: page
+          in: query
+          description: The current page number
           required: false
           schema:
             type: integer
-            example: 1023
-        - name: bvn
+            example: 1
+        - name: per_page
           in: query
-          description: Filter the report by a specific BVN (optional)
+          description: Number of items to return per page (Default is 20)
           required: false
           schema:
-            type: string
-            example: '22233445567'
-        - name: report_type
-          in: query
-          description: Type of report to generate (summary or detailed)
-          required: false
-          schema:
-            type: string
-            enum:
-              - "summary"
-              - "detailed"
-            example: "summary"
+            type: integer
+            example: 20      
       responses:
         '200':
           description: Report generated successfully
