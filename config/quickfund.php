@@ -421,6 +421,7 @@ return [
         'customer-credit-bureau-data', // For customer credit bureau data privileges
         'whitelists', // For whitelists privileges
         'blacklists', // For blacklists privileges
+        'testlists', // For testlists privileges
         'crcs', // For CRC records privileges
         'crc-histories', // For CRC histories records privileges
         'crc-reports', // For CRC reports privileges

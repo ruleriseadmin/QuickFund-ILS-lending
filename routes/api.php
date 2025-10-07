@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\TestListController;
 use App\Http\Controllers\{AccountResolutionController, ActivityLogController, AuthController, BlacklistController, CollectionCaseController, CollectionRemarkController, CollectorController, CrcController, CrcHistoryController, CreditScoreController, CustomerController, DepartmentController, FeeController, FirstCentralController, FirstCentralHistoryController, LoanController, LoanOfferController, NameEnquiryController, TestController, OfferController, RoleController, SettingController, SmsController, StaffController, TransactionController, WhitelistController};
 
 /*
@@ -226,6 +227,18 @@ Route::middleware([
                 Route::get('/{fee}', [FeeController::class, 'show'])->name('.show');
                 Route::put('/{fee}', [FeeController::class, 'update'])->name('.update');
                 Route::delete('/{fee}', [FeeController::class, 'destroy'])->name('.destroy');
+            });
+
+        Route::name('testlists')
+            ->prefix('/testlists')
+            ->middleware('ability:testlists')
+            ->group(function () {
+
+                Route::get('', [TestListController::class, 'index'])->name('.index');
+                Route::post('', [TestListController::class, 'store'])->name('.store');
+                Route::get('/count', [TestListController::class, 'count'])->name('.count');
+                Route::get('/{customerId}', [TestListController::class, 'show'])->name('.show');
+                Route::delete('/{customerId}', [TestListController::class, 'destroy'])->name('.destroy');
             });
 
         Route::name('whitelists')
