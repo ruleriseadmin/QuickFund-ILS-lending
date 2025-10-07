@@ -2,47 +2,67 @@
 set -e
 set -o pipefail
 
+APP_CONTAINER="app"
+COMPOSE_FILE="docker-compose.staging.yml"
+
 echo "🚀 Starting production deployment..."
 
 # 1. Pull latest code
 echo "🔄 Updating codebase..."
 git fetch origin main
-git reset --hard origin/main
+LOCAL=$(git rev-parse HEAD)
+REMOTE=$(git rev-parse origin/main)
+
+if [ "$LOCAL" = "$REMOTE" ]; then
+    echo "✅ Codebase is already up-to-date."
+    CODE_CHANGED=false
+else
+    echo "📦 New commits detected."
+    git reset --hard origin/main
+    CODE_CHANGED=true
+fi
 
 # 2. Fix permissions
 echo "🔧 Setting folder permissions..."
-# sudo chown -R www-data:www-data storage bootstrap/cache
 sudo chmod -R 755 storage bootstrap/cache
 
-# 3. Stop running containers
-echo "🧹 Stopping old containers..."
-./vendor/bin/sail -f docker-compose.staging.yml down --remove-orphans
+# 3. Stop app container if code changed
+if [ "$CODE_CHANGED" = true ]; then
+    echo "🧹 Stopping app container..."
+    docker compose -f $COMPOSE_FILE stop $APP_CONTAINER || true
+fi
 
-# 4. Switch to production mode
+# 4. Set production environment
 echo "⚙️ Setting environment to production..."
+chmod +x ./scripts/production.sh
 ./scripts/production.sh
 
-# 5. Build and start containers
-echo "🐳 Starting Docker containers..."
-./vendor/bin/sail -f docker-compose.staging.yml up --scale app=4 -d
+# 5. Build container if code changed
+if [ "$CODE_CHANGED" = true ]; then
+    echo "🐳 Building app container..."
+    docker compose -f $COMPOSE_FILE build --pull $APP_CONTAINER
+fi
 
-# 6. Install dependencies
-echo "📦 Installing dependencies..."
-./vendor/bin/sail composer install --optimize-autoloader --no-dev
+# 6. Start containers (idempotent)
+echo "🐳 Starting containers..."
+docker compose -f $COMPOSE_FILE up -d
 
-# 7. Clear & rebuild caches
+# 7. Install dependencies (only if code changed)
+if [ "$CODE_CHANGED" = true ]; then
+    echo "📦 Installing dependencies inside container..."
+    docker compose -f $COMPOSE_FILE run --rm $APP_CONTAINER bash -c "composer install --optimize-autoloader --no-dev"
+fi
+
+# 8. Clear & rebuild caches
 echo "🧹 Optimizing application..."
-./vendor/bin/sail artisan optimize:clear
-./vendor/bin/sail artisan optimize
+docker compose -f $COMPOSE_FILE run --rm $APP_CONTAINER bash -c "php artisan optimize:clear && php artisan optimize"
 
-# 8. Run migrations
+# 9. Run migrations
 echo "🗄️ Running database migrations..."
-./vendor/bin/sail artisan migrate --force
+docker compose -f $COMPOSE_FILE run --rm $APP_CONTAINER bash -c "php artisan migrate --force"
 
-# 9. Restart Horizon
+# 10. Restart Horizon
 echo "⚡ Restarting Horizon..."
-./vendor/bin/sail artisan horizon:terminate || true
+docker compose -f $COMPOSE_FILE run --rm $APP_CONTAINER bash -c "php artisan horizon:terminate || true"
 
 echo "✅ Deployment complete!"
-
-
