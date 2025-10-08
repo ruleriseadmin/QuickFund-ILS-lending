@@ -1,8 +1,8 @@
-openapi: '3.0.3'
+openapi: "3.0.3"
 info:
   title: Quickfund Lending API
   description: Documentation for Quickfund Lending API
-  version: '1.0'
+  version: "1.0"
 servers:
   - url: https://lending.quickfundmfb.com
     description: Production Environment
@@ -21,7 +21,7 @@ paths:
           required: true
           schema:
             type: string
-            example: '2348123456789'
+            example: "2348123456789"
         - name: amount
           description: The requested amount (Value is in Kobo)
           in: query
@@ -42,19 +42,19 @@ paths:
           required: false
           schema:
             type: string
-            example: 'MKT'
+            example: "MKT"
       responses:
-        '200':
+        "200":
           description: Request successful
-        '400':
+        "400":
           description: Failed to fetch customer details, Failed to get customer credit score, No offer, Outstanding loans unpaid
-        '401':
+        "401":
           description: Unauthenticated
-        '422':
+        "422":
           description: Validation errors
-        '500':
+        "500":
           description: Server error. Report to Developer
-        '503':
+        "503":
           description: Service Unavailable
         default:
           description: Fallback for undocumented status code
@@ -97,7 +97,7 @@ paths:
                   description: The expiry date of the offer (It should be in the format "YYYY-MM-DD")
                   type: string
                   format: date
-                  example: '2025-04-22'
+                  example: "2025-04-22"
               required:
                 - amount
                 - tenure
@@ -107,15 +107,15 @@ paths:
                 style: form
         required: true
       responses:
-        '201':
+        "201":
           description: Offer created
-        '400':
+        "400":
           description: Offer already exists
-        '401':
+        "401":
           description: Unauthenticated
-        '422':
+        "422":
           description: Validation errors
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -151,11 +151,11 @@ paths:
                 - password
         required: true
       responses:
-        '200':
+        "200":
           description: Login successful
-        '401':
+        "401":
           description: Invalid credentials
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -169,11 +169,11 @@ paths:
       summary: Logout from the application
       description: Logout from the application
       responses:
-        '200':
+        "200":
           description: Logout successful
-        '401':
+        "401":
           description: Invalid credentials
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -195,22 +195,22 @@ paths:
           required: true
           schema:
             type: number
-            example: '0140940818'
+            example: "0140940818"
         - name: bank_code
           in: query
           description: The bank code
           required: true
           schema:
             type: number
-            example: '058'
+            example: "058"
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '422':
+        "422":
           description: Validation errors
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -253,11 +253,11 @@ paths:
                 - password_confirmation
         required: true
       responses:
-        '200':
+        "200":
           description: Password changed successfully
-        '422':
+        "422":
           description: Validation errors
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -273,11 +273,11 @@ paths:
       summary: Get offers by the application (requires the permissions "offers" AND "fees" for a staff)
       description: Get all offers by the application (requires the permissions "offers" AND "fees" for a staff)
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -302,27 +302,27 @@ paths:
                 offerId:
                   description: The ID of the offer
                   type: string
-                  example: '1'
+                  example: "1"
                 customerId:
                   description: The phone number of the customer
                   type: string
-                  example: '2348123456789'
+                  example: "2348123456789"
                 destinationAccountNumber:
                   description: The destination account number
                   type: string
-                  example: '0123456789'
+                  example: "0123456789"
                 destinationBankCode:
                   description: The destination bank code
                   type: string
-                  example: '011'
+                  example: "011"
                 loanReferenceId:
                   description: Unique identifier assigned to a loan
                   type: string
-                  example: 'XYZ123465262646469476276572726'
+                  example: "XYZ123465262646469476276572726"
                 token:
                   description: The payment card token
                   type: string
-                  example: '5123450558220138603'
+                  example: "5123450558220138603"
               required:
                 - customerId
                 - offerId
@@ -332,15 +332,15 @@ paths:
                 # - token
         required: true
       responses:
-        '200':
+        "200":
           description: Offer accepted
-        '400':
+        "400":
           description: Customer not found, Offer not found, Offer expired, Offer status not "NONE", Outstanding loans unpaid, Failed to update offer status, Failed to credit customer, Failed to send SMS
-        '401':
+        "401":
           description: Unauthenticated
-        '422':
+        "422":
           description: Validation errors
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -364,13 +364,13 @@ paths:
       summary: Get an offer (requires the permissions "offers" AND "fees" for a staff)
       description: Get an offer (requires the permissions "offers" AND "fees" for a staff)
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '404':
+        "404":
           description: Offer not found
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -413,7 +413,7 @@ paths:
                   description: The expiry date of the offer (It should be in the format "YYYY-MM-DD")
                   type: string
                   format: date
-                  example: '2025-04-22'
+                  example: "2025-04-22"
               required:
                 - amount
                 - tenure
@@ -423,17 +423,17 @@ paths:
                 style: form
         required: true
       responses:
-        '200':
+        "200":
           description: Offer updated
-        '400':
+        "400":
           description: Offer already exists
-        '401':
+        "401":
           description: Unauthenticated
-        '404':
+        "404":
           description: Offer not found
-        '422':
+        "422":
           description: Validation errors
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -448,13 +448,13 @@ paths:
       summary: Delete an offer (requires the permissions "offers" AND "fees" for a staff)
       description: Delete an offer (requires the permissions "offers" AND "fees" for a staff)
       responses:
-        '200':
+        "200":
           description: Offer deleted
-        '401':
+        "401":
           description: Unauthenticated
-        '404':
+        "404":
           description: Offer not found
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -476,31 +476,31 @@ paths:
           in: path
           schema:
             type: string
-            example: '1'
+            example: "1"
         - name: customerId
           description: The phone number of the customer
           in: query
           required: true
           schema:
             type: string
-            example: '2348123456789'
+            example: "2348123456789"
         - name: channelCode
           description: The channel code
           in: query
           required: true
           schema:
             type: string
-            example: 'MKT'
+            example: "MKT"
       responses:
-        '200':
+        "200":
           description: Request successful
-        '400':
+        "400":
           description: Customer not found, Offer not found, No record of loan collected on offer
-        '401':
+        "401":
           description: Unauthenticated
-        '422':
+        "422":
           description: Validation errors
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -532,7 +532,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-01-01'
+            example: "2022-01-01"
         - name: to_date
           in: query
           description: The date to search to (It should be in the format "YYYY-MM-DD")
@@ -540,7 +540,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-12-31'
+            example: "2022-12-31"
         - name: due_from_date
           in: query
           description: The due date to search from (It should be in the format "YYYY-MM-DD")
@@ -548,7 +548,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-03-25'
+            example: "2022-03-25"
         - name: due_to_date
           in: query
           description: The due date to search to (It should be in the format "YYYY-MM-DD")
@@ -556,7 +556,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-06-25'
+            example: "2022-06-25"
         - name: page
           in: query
           description: The current page
@@ -572,13 +572,13 @@ paths:
             type: integer
             example: 1
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '422':
+        "422":
           description: Validation errors
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -616,11 +616,11 @@ paths:
             type: integer
             example: 1
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -644,13 +644,13 @@ paths:
             type: integer
             example: 1
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '404':
+        "404":
           description: Loan offer not found
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -674,15 +674,15 @@ paths:
             type: integer
             example: 1
       responses:
-        '200':
+        "200":
           description: Customer debited
-        '401':
+        "401":
           description: Unauthenticated
-        '404':
+        "404":
           description: Loan offer not found
-        '500':
+        "500":
           description: Server error. Report to Developer
-        '503':
+        "503":
           description: Service Unavailable
         default:
           description: Fallback for undocumented status code
@@ -706,15 +706,15 @@ paths:
             type: integer
             example: 1
       responses:
-        '200':
+        "200":
           description: Customer credited
-        '401':
+        "401":
           description: Unauthenticated
-        '404':
+        "404":
           description: Loan offer not found
-        '500':
+        "500":
           description: Server error. Report to Developer
-        '503':
+        "503":
           description: Service Unavailable
         default:
           description: Fallback for undocumented status code
@@ -752,15 +752,15 @@ paths:
                 - status
         required: true
       responses:
-        '200':
+        "200":
           description: Loan status updated
-        '401':
+        "401":
           description: Unauthenticated
-        '404':
+        "404":
           description: Loan offer not found
-        '500':
+        "500":
           description: Server error. Report to Developer
-        '503':
+        "503":
           description: Service Unavailable
         default:
           description: Fallback for undocumented status code
@@ -798,15 +798,15 @@ paths:
             type: integer
             example: 1
       responses:
-        '200':
+        "200":
           description: Request successful
-        '400':
+        "400":
           description: No loan collected on offer
-        '401':
+        "401":
           description: Unauthenticated
-        '404':
+        "404":
           description: Loan offer not found
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -844,15 +844,15 @@ paths:
                 - amount
         required: true
       responses:
-        '200':
+        "200":
           description: Customer refunded
-        '401':
+        "401":
           description: Unauthenticated
-        '404':
+        "404":
           description: Loan offer not found
-        '500':
+        "500":
           description: Server error. Report to Developer
-        '503':
+        "503":
           description: Service Unavailable
         default:
           description: Fallback for undocumented status code
@@ -915,15 +915,15 @@ paths:
                 - choice
         required: true
       responses:
-        '200':
+        "200":
           description: Customer refunded
-        '401':
+        "401":
           description: Unauthenticated
-        '404':
+        "404":
           description: Loan offer not found
-        '500':
+        "500":
           description: Server error. Report to Developer
-        '503':
+        "503":
           description: Service Unavailable
         default:
           description: Fallback for undocumented status code
@@ -961,15 +961,15 @@ paths:
                 - amount
         required: true
       responses:
-        '200':
+        "200":
           description: Loan payment processed successfully
-        '401':
+        "401":
           description: Unauthenticated
-        '404':
+        "404":
           description: Loan offer not found
-        '500':
+        "500":
           description: Server error. Report to Developer
-        '503':
+        "503":
           description: Service Unavailable
         default:
           description: Fallback for undocumented status code
@@ -1000,11 +1000,11 @@ paths:
             type: integer
             example: 1
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -1035,11 +1035,11 @@ paths:
             type: integer
             example: 1
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -1064,15 +1064,15 @@ paths:
                 loanId:
                   description: The ID of the loan
                   type: string
-                  example: '1'
+                  example: "1"
                 customerId:
                   description: The phone number of the customer
                   type: string
-                  example: '2348123456789'
+                  example: "2348123456789"
                 paymentRef:
                   description: The reference to the payment
                   type: string
-                  example: 'FBN|WEB|ILS|20170503121143|8903'
+                  example: "FBN|WEB|ILS|20170503121143|8903"
                 amount:
                   description: The payment amount (Value is in kobo)
                   type: integer
@@ -1084,17 +1084,17 @@ paths:
                 - amount
         required: true
       responses:
-        '200':
+        "200":
           description: Payment notification successful
-        '400':
+        "400":
           description: Customer not found, Offer not found, Loan status not "OPEN" or "OVERDUE", No record of loan collected on offer, Failed to update loan status, Failed to refund customer, Failed to send SMS
-        '401':
+        "401":
           description: Unauthenticated
-        '422':
+        "422":
           description: Validation errors
-        '500':
+        "500":
           description: Server error. Report to Developer
-        '503':
+        "503":
           description: Service Unavailable
         default:
           description: Fallback for undocumented status code
@@ -1114,18 +1114,18 @@ paths:
         content:
           application/xml:
             schema:
-              $ref: '#/components/schemas/Envelope'
+              $ref: "#/components/schemas/Envelope"
         required: true
       responses:
-        '200':
+        "200":
           description: Request successful
-        '400':
+        "400":
           description: Account number does not exist
-        '401':
+        "401":
           description: Unauthenticated
-        '422':
+        "422":
           description: Validation errors
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -1145,7 +1145,7 @@ paths:
           required: false
           schema:
             type: string
-            example: '00'
+            example: "00"
         - name: amount_from
           description: The amount to search from (Value is in Kobo)
           in: query
@@ -1190,7 +1190,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-01-01'
+            example: "2022-01-01"
         - name: to_date
           in: query
           description: The date to search to (It should be in the format "YYYY-MM-DD")
@@ -1198,15 +1198,15 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-12-31'
+            example: "2022-12-31"
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '422':
+        "422":
           description: Validation errors
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -1230,13 +1230,13 @@ paths:
       summary: Get a transaction (requires the permissions "transactions" for a staff)
       description: Get a transaction (requires the permissions "transactions" for a staff)
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '404':
+        "404":
           description: Transaction not found
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -1260,15 +1260,15 @@ paths:
             type: string
             example: 1
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '422':
+        "422":
           description: Validation errors
-        '500':
+        "500":
           description: Server error. Report to Developer
-        '503':
+        "503":
           description: Service Unavailable
         default:
           description: Fallback for undocumented status code
@@ -1299,11 +1299,11 @@ paths:
             type: integer
             example: 1
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -1334,11 +1334,11 @@ paths:
             type: integer
             example: 1
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -1381,7 +1381,7 @@ paths:
           required: false
           schema:
             type: string
-            example: '22222222222'
+            example: "22222222222"
         - name: page
           in: query
           description: The current page
@@ -1397,13 +1397,13 @@ paths:
             type: integer
             example: 1
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '422':
+        "422":
           description: Validation errors
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -1425,7 +1425,7 @@ paths:
           required: true
           schema:
             type: string
-            example: '22222222222'
+            example: "22222222222"
         - name: page
           in: query
           description: The current page
@@ -1441,13 +1441,13 @@ paths:
             type: integer
             example: 1
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '422':
+        "422":
           description: Validation errors
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -1469,7 +1469,7 @@ paths:
           required: true
           schema:
             type: string
-            example: 'oluyemi'
+            example: "oluyemi"
         - name: page
           in: query
           description: The current page
@@ -1485,13 +1485,13 @@ paths:
             type: integer
             example: 1
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '422':
+        "422":
           description: Validation errors
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -1515,13 +1515,13 @@ paths:
       summary: Get a customer (requires the permissions "customers" for a staff)
       description: Get a customer (requires the permissions "customers" for a staff)
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '404':
+        "404":
           description: Customer not found
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -1555,13 +1555,13 @@ paths:
                 - last_name
         required: true
       responses:
-        '200':
+        "200":
           description: Customer updated successfully
-        '401':
+        "401":
           description: Unauthenticated
-        '404':
+        "404":
           description: Customer not found
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -1585,15 +1585,15 @@ paths:
             type: string
             example: 1
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '404':
+        "404":
           description: Customer not found
-        '500':
+        "500":
           description: Server error. Report to Developer
-        '503':
+        "503":
           description: Service Unavailable
         default:
           description: Fallback for undocumented status code
@@ -1617,15 +1617,15 @@ paths:
             type: string
             example: 1
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '404':
+        "404":
           description: Customer not found
-        '500':
+        "500":
           description: Server error. Report to Developer
-        '503':
+        "503":
           description: Service Unavailable
         default:
           description: Fallback for undocumented status code
@@ -1663,11 +1663,11 @@ paths:
             type: integer
             example: 1
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -1691,11 +1691,11 @@ paths:
             type: string
             example: 1
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -1719,15 +1719,15 @@ paths:
             type: string
             example: 1
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '404':
+        "404":
           description: Customer not found
-        '500':
+        "500":
           description: Server error. Report to Developer
-        '503':
+        "503":
           description: Service Unavailable
         default:
           description: Fallback for undocumented status code
@@ -1751,15 +1751,15 @@ paths:
             type: string
             example: 1
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '404':
+        "404":
           description: Customer not found
-        '500':
+        "500":
           description: Server error. Report to Developer
-        '503':
+        "503":
           description: Service Unavailable
         default:
           description: Fallback for undocumented status code
@@ -1775,11 +1775,11 @@ paths:
       summary: Get fees (requires the permissions "fees" for a staff)
       description: Get fees (requires the permissions "fees" for a staff)
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -1813,13 +1813,13 @@ paths:
                 - amount
         required: true
       responses:
-        '201':
+        "201":
           description: Fee created successfully
-        '401':
+        "401":
           description: Unauthenticated
-        '422':
+        "422":
           description: Validation errors
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -1843,13 +1843,13 @@ paths:
       summary: Get a fee (requires the permissions "fees" for a staff)
       description: Get a fee (requires the permissions "fees" for a staff)
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '404':
+        "404":
           description: Fee not found
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -1883,15 +1883,15 @@ paths:
                 - amount
         required: true
       responses:
-        '200':
+        "200":
           description: Fee updated successfully
-        '401':
+        "401":
           description: Unauthenticated
-        '404':
+        "404":
           description: Fee not found
-        '422':
+        "422":
           description: Validation errors
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -1906,13 +1906,13 @@ paths:
       summary: Delete fee (requires the permissions "fees" for a staff)
       description: Delete fee (requires the permissions "fees" for a staff)
       responses:
-        '200':
+        "200":
           description: Fee deleted successfully
-        '401':
+        "401":
           description: Unauthenticated
-        '404':
+        "404":
           description: Fee not found
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -1943,11 +1943,11 @@ paths:
             type: integer
             example: 1
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -1971,18 +1971,18 @@ paths:
                 phone_number:
                   description: The phone number of the customer
                   type: string
-                  example: '2348123456789'
+                  example: "2348123456789"
               required:
                 - phone_number
         required: true
       responses:
-        '201':
+        "201":
           description: Phone number whitelisted
-        '401':
+        "401":
           description: Unauthenticated
-        '422':
+        "422":
           description: Validation errors
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -2000,19 +2000,19 @@ paths:
         required: true
         schema:
           type: string
-          example: '2348123456789'
+          example: "2348123456789"
     get:
       tags: [Application]
       summary: Get a whitelisted customer by phone number (requires the permissions "whitelists" for a staff)
       description: Get a whitelisted customer by phone number (requires the permissions "whitelists" for a staff)
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '404':
+        "404":
           description: Phone number not whitelisted
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -2027,13 +2027,13 @@ paths:
       summary: Remove a phone number from the whitelist (requires the permissions "whitelists" for a staff)
       description: Remove a phone number from the whitelist (requires the permissions "whitelists" for a staff)
       responses:
-        '200':
+        "200":
           description: Phone number removed from whitelist
-        '401':
+        "401":
           description: Unauthenticated
-        '404':
+        "404":
           description: Phone number not whitelisted
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -2043,6 +2043,167 @@ paths:
                 type: object
       security:
         - httpBearer: []
+  /api/testlists:
+    get:
+      tags: [Application]
+      summary: Get testlisted customers (requires the permissions "testlists" for a staff)
+      description: Get testlisted customers (requires the permissions "testlists" for a staff)
+      parameters:
+        - name: page
+          in: query
+          description: The current page
+          required: false
+          schema:
+            type: integer
+            example: 1
+        - name: per_page
+          in: query
+          description: The number of items to return per page (Default is 20)
+          required: false
+          schema:
+            type: integer
+            example: 20
+      responses:
+        "200":
+          description: Request successful
+        "401":
+          description: Unauthenticated
+        "500":
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+    post:
+      tags: [Application]
+      summary: Add a customer to the testlist to see test offers (requires the permissions "testlists" for a staff)
+      description: Add a customer to the testlist to see test offers (requires the permissions "testlists" for a staff)
+      requestBody:
+        description: Data for testlisting a customer
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                phone_number:
+                  description: The phone number of the customer
+                  type: string
+                  example: "2348123456789"
+              required:
+                - phone_number
+        required: true
+      responses:
+        "201":
+          description: Phone number added to testlist
+        "401":
+          description: Unauthenticated
+        "422":
+          description: Validation errors
+        "500":
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+
+  /api/testlists/count:
+    get:
+      tags: [Application]
+      summary: Get the testlisted customers count (requires the permissions "testlists" for a staff)
+      description: Get the testlisted customers count (requires the permissions "testlists" for a staff)
+      parameters:
+        - name: from_date
+          in: query
+          description: The date to search from (format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: "2022-01-01"
+        - name: to_date
+          in: query
+          description: The date to search to (format "YYYY-MM-DD")
+          required: false
+          schema:
+            type: string
+            format: date
+            example: "2022-12-31"
+      responses:
+        "200":
+          description: Request successful
+        "401":
+          description: Unauthenticated
+        "500":
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+
+  /api/testlists/{customerId}:
+    parameters:
+      - name: customerId
+        in: path
+        description: The phone number of the customer
+        required: true
+        schema:
+          type: string
+          example: "2348123456789"
+    get:
+      tags: [Application]
+      summary: Get a testlisted customer by phone number (requires the permissions "testlists" for a staff)
+      description: Get a testlisted customer by phone number (requires the permissions "testlists" for a staff)
+      responses:
+        "200":
+          description: Request successful
+        "401":
+          description: Unauthenticated
+        "404":
+          description: Phone number not testlisted
+        "500":
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+    delete:
+      tags: [Application]
+      summary: Remove a phone number from the testlist (requires the permissions "testlists" for a staff)
+      description: Remove a phone number from the testlist (requires the permissions "testlists" for a staff)
+      responses:
+        "200":
+          description: Phone number removed from testlist
+        "401":
+          description: Unauthenticated
+        "404":
+          description: Phone number not testlisted
+        "500":
+          description: Server error. Report to Developer
+        default:
+          description: Fallback for undocumented status code
+          content:
+            application/json:
+              schema:
+                type: object
+      security:
+        - httpBearer: []
+
   /api/blacklists:
     get:
       tags: [Application]
@@ -2064,11 +2225,11 @@ paths:
             type: integer
             example: 1
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -2092,18 +2253,18 @@ paths:
                 phone_number:
                   description: The phone number of the customer
                   type: string
-                  example: '2348123456789'
+                  example: "2348123456789"
               required:
                 - phone_number
         required: true
       responses:
-        '201':
+        "201":
           description: Phone number blacklisted
-        '401':
+        "401":
           description: Unauthenticated
-        '422':
+        "422":
           description: Validation errors
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -2126,7 +2287,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-01-01'
+            example: "2022-01-01"
         - name: to_date
           in: query
           description: The date to search to (It should be in the format "YYYY-MM-DD")
@@ -2134,13 +2295,13 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-12-31'
+            example: "2022-12-31"
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -2152,25 +2313,25 @@ paths:
         - httpBearer: []
   /api/blacklists/{customerId}:
     parameters:
-        - name: customerId
-          in: path
-          description: The phone number of the customer
-          required: true
-          schema:
-            type: string
-            example: '2348123456789'
+      - name: customerId
+        in: path
+        description: The phone number of the customer
+        required: true
+        schema:
+          type: string
+          example: "2348123456789"
     get:
       tags: [Application]
       summary: Get a blacklisted customer by phone number (requires the permissions "blacklists" for a staff)
       description: Get a blacklisted customer by phone number (requires the permissions "blacklists" for a staff)
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '404':
+        "404":
           description: Phone number not blacklisted
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -2185,13 +2346,13 @@ paths:
       summary: Remove a phone number from the blacklist (requires the permissions "blacklists" for a staff)
       description: Remove a phone number from the blacklist (requires the permissions "blacklists" for a staff)
       responses:
-        '200':
+        "200":
           description: Phone number removed from blacklist
-        '401':
+        "401":
           description: Unauthenticated
-        '404':
+        "404":
           description: Phone number not blacklisted
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -2201,6 +2362,7 @@ paths:
                 type: object
       security:
         - httpBearer: []
+
   /api/crcs:
     get:
       tags: [Application]
@@ -2228,7 +2390,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-01-01'
+            example: "2022-01-01"
         - name: to_date
           in: query
           description: The date to search to (It should be in the format "YYYY-MM-DD")
@@ -2236,7 +2398,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-12-31'
+            example: "2022-12-31"
         - name: delinquencies
           in: query
           description: The number of deliquencies
@@ -2255,11 +2417,11 @@ paths:
               - "NO"
             example: "YES"
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -2282,7 +2444,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-01-01'
+            example: "2022-01-01"
         - name: to_date
           in: query
           description: The date to pull report to (It should be in the format "YYYY-MM-DD")
@@ -2290,13 +2452,13 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-12-31'
+            example: "2022-12-31"
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -2322,7 +2484,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-01-01'
+            example: "2022-01-01"
         - name: to_date
           in: query
           description: The date to search to (format "YYYY-MM-DD")
@@ -2330,14 +2492,14 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-12-31'
+            example: "2022-12-31"
         - name: bvn
           in: query
           description: Filter by BVN
           required: false
           schema:
             type: string
-            example: '22334455667'
+            example: "22334455667"
         - name: page
           in: query
           description: The current page number
@@ -2353,13 +2515,13 @@ paths:
             type: integer
             example: 20
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '403':
+        "403":
           description: Forbidden — Missing required ability ("crc-reports")
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -2382,7 +2544,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-01-01'
+            example: "2022-01-01"
         - name: to_date
           in: query
           description: The date to search to (It should be in the format "YYYY-MM-DD")
@@ -2390,7 +2552,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-12-31'
+            example: "2022-12-31"
         - name: page
           in: query
           description: The current page
@@ -2406,11 +2568,11 @@ paths:
             type: integer
             example: 15
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -2447,7 +2609,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-01-01'
+            example: "2022-01-01"
         - name: to_date
           in: query
           description: The date to search to (It should be in the format "YYYY-MM-DD")
@@ -2455,7 +2617,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-12-31'
+            example: "2022-12-31"
         - name: delinquencies
           in: query
           description: The number of deliquencies
@@ -2474,11 +2636,11 @@ paths:
               - "NO"
             example: "YES"
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -2501,7 +2663,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-01-01'
+            example: "2022-01-01"
         - name: to_date
           in: query
           description: The date to pull report to (It should be in the format "YYYY-MM-DD")
@@ -2509,13 +2671,13 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-12-31'
+            example: "2022-12-31"
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -2543,7 +2705,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-01-01'
+            example: "2022-01-01"
         - name: to_date
           in: query
           description: The date to search to (format "YYYY-MM-DD")
@@ -2551,14 +2713,14 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-12-31'
+            example: "2022-12-31"
         - name: bvn
           in: query
           description: Filter by BVN
           required: false
           schema:
             type: string
-            example: '22334455667'
+            example: "22334455667"
         - name: page
           in: query
           description: The current page number
@@ -2572,15 +2734,15 @@ paths:
           required: false
           schema:
             type: integer
-            example: 20      
+            example: 20
       responses:
-        '200':
+        "200":
           description: Report generated successfully
-        '401':
+        "401":
           description: Unauthenticated
-        '403':
+        "403":
           description: Forbidden — missing required permission
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status codes
@@ -2604,7 +2766,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-01-01'
+            example: "2022-01-01"
         - name: to_date
           in: query
           description: The date to search to (It should be in the format "YYYY-MM-DD")
@@ -2612,7 +2774,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-12-31'
+            example: "2022-12-31"
         - name: page
           in: query
           description: The current page
@@ -2628,11 +2790,11 @@ paths:
             type: integer
             example: 15
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -2676,7 +2838,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-01-01'
+            example: "2022-01-01"
         - name: to_date
           in: query
           description: The date to search to (It should be in the format "YYYY-MM-DD")
@@ -2684,13 +2846,13 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-12-31'
+            example: "2022-12-31"
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -2735,11 +2897,11 @@ paths:
             type: integer
             example: 1
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -2762,7 +2924,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-01-01'
+            example: "2022-01-01"
         - name: to_date
           in: query
           description: The date to search to (It should be in the format "YYYY-MM-DD")
@@ -2770,13 +2932,13 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-12-31'
+            example: "2022-12-31"
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -2799,7 +2961,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-01-01'
+            example: "2022-01-01"
         - name: to_date
           in: query
           description: The date to search to (It should be in the format "YYYY-MM-DD")
@@ -2807,13 +2969,13 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-12-31'
+            example: "2022-12-31"
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -2836,7 +2998,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-01-01'
+            example: "2022-01-01"
         - name: to_date
           in: query
           description: The date to search to (It should be in the format "YYYY-MM-DD")
@@ -2844,13 +3006,13 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-12-31'
+            example: "2022-12-31"
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -2873,7 +3035,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-01-01'
+            example: "2022-01-01"
         - name: to_date
           in: query
           description: The date to search to (It should be in the format "YYYY-MM-DD")
@@ -2881,13 +3043,13 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-12-31'
+            example: "2022-12-31"
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -2910,7 +3072,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-01-01'
+            example: "2022-01-01"
         - name: to_date
           in: query
           description: The date to search to (It should be in the format "YYYY-MM-DD")
@@ -2918,13 +3080,13 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-12-31'
+            example: "2022-12-31"
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -2947,7 +3109,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-01-01'
+            example: "2022-01-01"
         - name: to_date
           in: query
           description: The date to search to (It should be in the format "YYYY-MM-DD")
@@ -2955,13 +3117,13 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-12-31'
+            example: "2022-12-31"
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -2984,7 +3146,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-01-01'
+            example: "2022-01-01"
         - name: to_date
           in: query
           description: The date to search to (It should be in the format "YYYY-MM-DD")
@@ -2992,13 +3154,13 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-12-31'
+            example: "2022-12-31"
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -3021,7 +3183,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-01-01'
+            example: "2022-01-01"
         - name: to_date
           in: query
           description: The date to search to (It should be in the format "YYYY-MM-DD")
@@ -3029,13 +3191,13 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-12-31'
+            example: "2022-12-31"
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -3058,7 +3220,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-01-01'
+            example: "2022-01-01"
         - name: to_date
           in: query
           description: The date to search to (It should be in the format "YYYY-MM-DD")
@@ -3066,13 +3228,13 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-12-31'
+            example: "2022-12-31"
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -3095,7 +3257,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-01-01'
+            example: "2022-01-01"
         - name: to_date
           in: query
           description: The date to search to (It should be in the format "YYYY-MM-DD")
@@ -3103,13 +3265,13 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-12-31'
+            example: "2022-12-31"
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -3132,7 +3294,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-01-01'
+            example: "2022-01-01"
         - name: to_date
           in: query
           description: The date to search to (It should be in the format "YYYY-MM-DD")
@@ -3140,13 +3302,13 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-12-31'
+            example: "2022-12-31"
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -3169,7 +3331,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-01-01'
+            example: "2022-01-01"
         - name: to_date
           in: query
           description: The date to search to (It should be in the format "YYYY-MM-DD")
@@ -3177,13 +3339,13 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-12-31'
+            example: "2022-12-31"
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -3199,11 +3361,11 @@ paths:
       summary: Get the open loans due today (Principal plus Interest) (requires the permissions "loans" AND "loan-metrics" for a staff)
       description: Get the open loans due today (Principal plus Interest) (requires the permissions "loans" AND "loan-metrics" for a staff)
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -3219,11 +3381,11 @@ paths:
       summary: Get the open loans due today principal (requires the permissions "loans" AND "loan-metrics" for a staff)
       description: Get the open loans due today principal (requires the permissions "loans" AND "loan-metrics" for a staff)
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -3239,11 +3401,11 @@ paths:
       summary: Get the open loans due today interest (requires the permissions "loans" AND "loan-metrics" for a staff)
       description: Get the open loans due today interest (requires the permissions "loans" AND "loan-metrics" for a staff)
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -3266,7 +3428,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-01-01'
+            example: "2022-01-01"
         - name: to_date
           in: query
           description: The date to search to (It should be in the format "YYYY-MM-DD")
@@ -3274,13 +3436,13 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-12-31'
+            example: "2022-12-31"
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -3303,7 +3465,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-01-01'
+            example: "2022-01-01"
         - name: to_date
           in: query
           description: The date to search to (It should be in the format "YYYY-MM-DD")
@@ -3311,13 +3473,13 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-12-31'
+            example: "2022-12-31"
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -3340,7 +3502,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-01-01'
+            example: "2022-01-01"
         - name: to_date
           in: query
           description: The date to search to (It should be in the format "YYYY-MM-DD")
@@ -3348,13 +3510,13 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-12-31'
+            example: "2022-12-31"
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -3377,7 +3539,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-01-01'
+            example: "2022-01-01"
         - name: to_date
           in: query
           description: The date to search to (It should be in the format "YYYY-MM-DD")
@@ -3385,13 +3547,13 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-12-31'
+            example: "2022-12-31"
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -3415,11 +3577,11 @@ paths:
             type: integer
             example: 3
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -3443,11 +3605,11 @@ paths:
             type: integer
             example: 3
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -3471,11 +3633,11 @@ paths:
             type: integer
             example: 3
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -3498,7 +3660,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-01-01'
+            example: "2022-01-01"
         - name: to_date
           in: query
           description: The date to search to (It should be in the format "YYYY-MM-DD")
@@ -3506,13 +3668,13 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-12-31'
+            example: "2022-12-31"
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -3535,7 +3697,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-01-01'
+            example: "2022-01-01"
         - name: to_date
           in: query
           description: The date to search to (It should be in the format "YYYY-MM-DD")
@@ -3543,13 +3705,13 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-12-31'
+            example: "2022-12-31"
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -3572,7 +3734,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-01-01'
+            example: "2022-01-01"
         - name: to_date
           in: query
           description: The date to search to (It should be in the format "YYYY-MM-DD")
@@ -3580,13 +3742,13 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-12-31'
+            example: "2022-12-31"
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -3609,7 +3771,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-01-01'
+            example: "2022-01-01"
         - name: to_date
           in: query
           description: The date to search to (It should be in the format "YYYY-MM-DD")
@@ -3617,13 +3779,13 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-12-31'
+            example: "2022-12-31"
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -3646,7 +3808,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-01-01'
+            example: "2022-01-01"
         - name: to_date
           in: query
           description: The date to search to (It should be in the format "YYYY-MM-DD")
@@ -3654,13 +3816,13 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-12-31'
+            example: "2022-12-31"
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -3676,11 +3838,11 @@ paths:
       summary: Get the total amount disbursed for the day (requires the permissions "loans" AND "loan-metrics" for a staff)
       description: Get the total amount disbursed for the day (requires the permissions "loans" AND "loan-metrics" for a staff)
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -3703,7 +3865,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-01-01'
+            example: "2022-01-01"
         - name: to_date
           in: query
           description: The date to search to (It should be in the format "YYYY-MM-DD")
@@ -3711,13 +3873,13 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-12-31'
+            example: "2022-12-31"
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -3740,7 +3902,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-01-01'
+            example: "2022-01-01"
         - name: to_date
           in: query
           description: The date to search to (It should be in the format "YYYY-MM-DD")
@@ -3748,13 +3910,13 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-12-31'
+            example: "2022-12-31"
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -3777,7 +3939,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-01-01'
+            example: "2022-01-01"
         - name: to_date
           in: query
           description: The date to search to (It should be in the format "YYYY-MM-DD")
@@ -3785,13 +3947,13 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-12-31'
+            example: "2022-12-31"
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -3814,7 +3976,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-01-01'
+            example: "2022-01-01"
         - name: to_date
           in: query
           description: The date to search to (It should be in the format "YYYY-MM-DD")
@@ -3822,13 +3984,13 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-12-31'
+            example: "2022-12-31"
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -3852,13 +4014,13 @@ paths:
             type: integer
             example: 30
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '422':
+        "422":
           description: Validation errors
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -3898,11 +4060,11 @@ paths:
                 style: form
         required: true
       responses:
-        '200':
+        "200":
           description: SMS(s) dispatched successfully
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -3933,13 +4095,13 @@ paths:
             type: integer
             example: 15
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '403':
+        "403":
           description: Forbidden
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -3976,7 +4138,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2023-01-01'
+            example: "2023-01-01"
         - name: dpd_from
           in: query
           description: The days past due to search from
@@ -3998,7 +4160,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2023-01-01'
+            example: "2023-01-01"
         - name: ptp_to
           in: query
           description: The promised to pay date to search to
@@ -4006,7 +4168,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2023-03-01'
+            example: "2023-03-01"
         - name: page
           in: query
           description: The current page
@@ -4022,13 +4184,13 @@ paths:
             type: integer
             example: 1
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '422':
+        "422":
           description: Validation errors
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -4051,7 +4213,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-01-01'
+            example: "2022-01-01"
         - name: to_date
           in: query
           description: The date to search to (It should be in the format "YYYY-MM-DD")
@@ -4059,13 +4221,13 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-12-31'
+            example: "2022-12-31"
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -4088,7 +4250,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-01-01'
+            example: "2022-01-01"
         - name: to_date
           in: query
           description: The date to search to (It should be in the format "YYYY-MM-DD")
@@ -4096,13 +4258,13 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-12-31'
+            example: "2022-12-31"
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -4125,7 +4287,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-01-01'
+            example: "2022-01-01"
         - name: to_date
           in: query
           description: The date to search to (It should be in the format "YYYY-MM-DD")
@@ -4133,13 +4295,13 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-12-31'
+            example: "2022-12-31"
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -4170,11 +4332,11 @@ paths:
             type: integer
             example: 15
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -4197,7 +4359,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-01-01'
+            example: "2022-01-01"
         - name: to_date
           in: query
           description: The date to search to (It should be in the format "YYYY-MM-DD")
@@ -4205,13 +4367,13 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-12-31'
+            example: "2022-12-31"
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -4227,11 +4389,11 @@ paths:
       summary: Get the amount paid on collection cases of a user (requires the permissions "collection-cases" for a staff)
       description: Get the amount paid on collection cases of a user (requires the permissions "collection-cases" for a staff)
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -4247,11 +4409,11 @@ paths:
       summary: Get the count of the total amount paid on collection cases of a user (requires the permissions "collection-cases" for a staff)
       description: Get the count of the total amount paid on collection cases of a user (requires the permissions "collection-cases" for a staff)
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -4274,7 +4436,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-01-01'
+            example: "2022-01-01"
         - name: to_date
           in: query
           description: The date to search to (It should be in the format "YYYY-MM-DD")
@@ -4282,13 +4444,13 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-12-31'
+            example: "2022-12-31"
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -4311,7 +4473,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-01-01'
+            example: "2022-01-01"
         - name: to_date
           in: query
           description: The date to search to (It should be in the format "YYYY-MM-DD")
@@ -4319,13 +4481,13 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-12-31'
+            example: "2022-12-31"
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -4348,7 +4510,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-01-01'
+            example: "2022-01-01"
         - name: to_date
           in: query
           description: The date to search to (It should be in the format "YYYY-MM-DD")
@@ -4356,13 +4518,13 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-12-31'
+            example: "2022-12-31"
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -4393,11 +4555,11 @@ paths:
             type: integer
             example: 15
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -4420,7 +4582,7 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-01-01'
+            example: "2022-01-01"
         - name: to_date
           in: query
           description: The date to search to (It should be in the format "YYYY-MM-DD")
@@ -4428,13 +4590,13 @@ paths:
           schema:
             type: string
             format: date
-            example: '2022-12-31'
+            example: "2022-12-31"
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -4450,11 +4612,11 @@ paths:
       summary: Get the total amount paid on collection cases (requires the permissions "collection-cases" AND "super-collector" for a staff)
       description: Get the total amount paid on collection cases (requires the permissions "collection-cases" AND "super-collector" for a staff)
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -4470,11 +4632,11 @@ paths:
       summary: Get the count of the total amount paid on collection cases (requires the permissions "collection-cases" AND "super-collector" for a staff)
       description: Get the count of the total amount paid on collection cases (requires the permissions "collection-cases" AND "super-collector" for a staff)
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -4498,15 +4660,15 @@ paths:
             type: integer
             example: 1
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '403':
+        "403":
           description: Forbidden
-        '404':
+        "404":
           description: Collection case not found
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -4543,12 +4705,12 @@ paths:
                   description: The date the customer promised to pay
                   type: string
                   format: date
-                  example: '2024-01-01'
+                  example: "2024-01-01"
                 already_paid_at:
                   description: The date the customer made payment
                   type: string
                   format: date
-                  example: '2022-01-01'
+                  example: "2022-01-01"
                 comment:
                   description: Additional comments on the loan
                   type: string
@@ -4557,15 +4719,15 @@ paths:
                 - remark
         required: true
       responses:
-        '200':
+        "200":
           description: Collection case updated successfully
-        '401':
+        "401":
           description: Unauthenticated
-        '403':
+        "403":
           description: Forbidden
-        '404':
+        "404":
           description: Collection case not found
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -4603,15 +4765,15 @@ paths:
                 - user_id
         required: true
       responses:
-        '200':
+        "200":
           description: Collection case assigned
-        '401':
+        "401":
           description: Unauthenticated
-        '403':
+        "403":
           description: Forbidden
-        '404':
+        "404":
           description: Collection case not found
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -4642,13 +4804,13 @@ paths:
             type: integer
             example: 15
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '403':
+        "403":
           description: Forbidden
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -4677,15 +4839,15 @@ paths:
                 - name
         required: true
       responses:
-        '201':
+        "201":
           description: Collection remark created successfully
-        '401':
+        "401":
           description: Unauthenticated
-        '403':
+        "403":
           description: Forbidden
-        '422':
+        "422":
           description: Validation errors
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -4709,15 +4871,15 @@ paths:
       summary: Get a collection remark (requires the permissions "super-collector" for a staff)
       description: Get a collection remark (requires the permissions "super-collector" for a staff)
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '403':
+        "403":
           description: Forbidden
-        '404':
+        "404":
           description: Collection remark not found
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -4746,17 +4908,17 @@ paths:
                 - name
         required: true
       responses:
-        '200':
+        "200":
           description: Collection remark updated successfully
-        '401':
+        "401":
           description: Unauthenticated
-        '403':
+        "403":
           description: Forbidden
-        '404':
+        "404":
           description: Collection remark not found
-        '422':
+        "422":
           description: Validation errors
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -4771,15 +4933,15 @@ paths:
       summary: Delete a collection remark (requires the permissions "super-collector" for a staff)
       description: Delete a collection remark (requires the permissions "super-collector" for a staff)
       responses:
-        '200':
+        "200":
           description: Collection remark deleted successfully
-        '401':
+        "401":
           description: Unauthenticated
-        '403':
+        "403":
           description: Forbidden
-        '404':
+        "404":
           description: Collection remark not found
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -4810,11 +4972,11 @@ paths:
             type: integer
             example: 1
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -4830,11 +4992,11 @@ paths:
       summary: Get roles (EXCLUSIVE TO ADMINISTRATORS)
       description: Get roles (EXCLUSIVE TO ADMINISTRATORS)
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -4873,13 +5035,13 @@ paths:
                 style: form
         required: true
       responses:
-        '201':
+        "201":
           description: Role created successfully
-        '401':
+        "401":
           description: Unauthenticated
-        '422':
+        "422":
           description: Validation errors
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -4903,13 +5065,13 @@ paths:
       summary: Get a role (EXCLUSIVE TO ADMINISTRATORS)
       description: Get a role (EXCLUSIVE TO ADMINISTRATORS)
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '404':
+        "404":
           description: Role not found
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -4948,15 +5110,15 @@ paths:
                 style: form
         required: true
       responses:
-        '200':
+        "200":
           description: Role updated successfully
-        '401':
+        "401":
           description: Unauthenticated
-        '404':
+        "404":
           description: Role not found
-        '422':
+        "422":
           description: Validation errors
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -4971,13 +5133,13 @@ paths:
       summary: Delete role (EXCLUSIVE TO ADMINISTRATORS)
       description: Delete role (EXCLUSIVE TO ADMINISTRATORS)
       responses:
-        '200':
+        "200":
           description: Role deleted successfully
-        '401':
+        "401":
           description: Unauthenticated
-        '404':
+        "404":
           description: Role not found
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -5008,13 +5170,13 @@ paths:
             type: integer
             example: 15
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '403':
+        "403":
           description: Forbidden
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -5043,15 +5205,15 @@ paths:
                 - name
         required: true
       responses:
-        '201':
+        "201":
           description: Department created successfully
-        '401':
+        "401":
           description: Unauthenticated
-        '403':
+        "403":
           description: Forbidden
-        '422':
+        "422":
           description: Validation errors
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -5075,15 +5237,15 @@ paths:
       summary: Get a department (EXCLUSIVE TO ADMINISTRATORS)
       description: Get a department (EXCLUSIVE TO ADMINISTRATORS)
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '403':
+        "403":
           description: Forbidden
-        '404':
+        "404":
           description: Department not found
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -5112,17 +5274,17 @@ paths:
                 - name
         required: true
       responses:
-        '200':
+        "200":
           description: Department updated successfully
-        '401':
+        "401":
           description: Unauthenticated
-        '403':
+        "403":
           description: Forbidden
-        '404':
+        "404":
           description: Department not found
-        '422':
+        "422":
           description: Validation errors
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -5137,15 +5299,15 @@ paths:
       summary: Delete a department (EXCLUSIVE TO ADMINISTRATORS)
       description: Delete a department (EXCLUSIVE TO ADMINISTRATORS)
       responses:
-        '200':
+        "200":
           description: Department deleted successfully
-        '401':
+        "401":
           description: Unauthenticated
-        '403':
+        "403":
           description: Forbidden
-        '404':
+        "404":
           description: Department not found
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -5176,13 +5338,13 @@ paths:
             type: integer
             example: 15
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '403':
+        "403":
           description: Forbidden
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -5218,7 +5380,7 @@ paths:
                 phone:
                   description: The phone number of the staff
                   type: string
-                  example: '08111111111'
+                  example: "08111111111"
                 password:
                   description: The password of the staff
                   type: string
@@ -5248,15 +5410,15 @@ paths:
                 - department_id
         required: true
       responses:
-        '201':
+        "201":
           description: Staff created successfully
-        '401':
+        "401":
           description: Unauthenticated
-        '403':
+        "403":
           description: Forbidden
-        '422':
+        "422":
           description: Validation errors
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -5280,15 +5442,15 @@ paths:
       summary: Get a staff (EXCLUSIVE TO ADMINISTRATORS)
       description: Get a staff (EXCLUSIVE TO ADMINISTRATORS)
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '403':
+        "403":
           description: Forbidden
-        '404':
+        "404":
           description: Staff not found
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -5324,7 +5486,7 @@ paths:
                 phone:
                   description: The phone number of the staff
                   type: string
-                  example: '08111111111'
+                  example: "08111111111"
                 password:
                   description: The password of the staff
                   type: string
@@ -5354,17 +5516,17 @@ paths:
                 - department_id
         required: true
       responses:
-        '200':
+        "200":
           description: Staff updated successfully
-        '401':
+        "401":
           description: Unauthenticated
-        '403':
+        "403":
           description: Forbidden
-        '404':
+        "404":
           description: Staff not found
-        '422':
+        "422":
           description: Validation errors
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -5379,15 +5541,15 @@ paths:
       summary: Delete a staff (EXCLUSIVE TO ADMINISTRATORS)
       description: Delete a staff (EXCLUSIVE TO ADMINISTRATORS)
       responses:
-        '200':
+        "200":
           description: Staff deleted successfully
-        '401':
+        "401":
           description: Unauthenticated
-        '403':
+        "403":
           description: Forbidden
-        '404':
+        "404":
           description: Staff not found
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -5403,11 +5565,11 @@ paths:
       summary: Get application settings (EXCLUSIVE TO ADMINISTRATORS)
       description: Get application settings (EXCLUSIVE TO ADMINISTRATORS)
       responses:
-        '200':
+        "200":
           description: Request successful
-        '401':
+        "401":
           description: Unauthenticated
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -5615,13 +5777,13 @@ paths:
                 style: form
         required: true
       responses:
-        '200':
+        "200":
           description: Settings updated
-        '401':
+        "401":
           description: Unauthenticated
-        '422':
+        "422":
           description: Validation errors
-        '500':
+        "500":
           description: Server error. Report to Developer
         default:
           description: Fallback for undocumented status code
@@ -5666,7 +5828,7 @@ components:
                   properties:
                     CustomerID:
                       type: string
-                      example: '1100022859'
+                      example: "1100022859"
                       xml:
                         prefix: ns3
                   required:
