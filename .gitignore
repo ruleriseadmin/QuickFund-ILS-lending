@@ -18,3 +18,4 @@ auth.json
 .env.*
 
 cronjob.log
+ssl/
