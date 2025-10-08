@@ -65,4 +65,8 @@ docker compose -f $COMPOSE_FILE run --rm $APP_CONTAINER bash -c "php artisan mig
 echo "⚡ Restarting Horizon..."
 docker compose -f $COMPOSE_FILE run --rm $APP_CONTAINER bash -c "php artisan horizon:terminate || true"
 
+# 11. Restart Swagger UI container to reflect new API docs
+echo "📜 Restarting Swagger UI container..."
+docker compose -f $COMPOSE_FILE up -d --force-recreate swagger
+
 echo "✅ Deployment complete!"
