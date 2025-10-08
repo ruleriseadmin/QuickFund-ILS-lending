@@ -57,6 +57,9 @@ return [
         'username' => env('CRC_USERNAME'),
         'password' => env('CRC_PASSWORD'),
         'reporting_userid' => env('CRC_REPORT_USERID'),
+        'reporting_password' => env('CRC_REPORT_PASSWORD'),
+        'reporting_apikey' => env('CRC_REPORT_APIKEY'),
+        'reporting_base_url' => env('CRC_REPORT_BASE_URL'),
     ],
 
 

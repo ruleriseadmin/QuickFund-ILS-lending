@@ -17,7 +17,8 @@ class Crc implements CreditBureau
 
     public function __construct()
     {
-        $this->reportBaseUrl = 'https://files.creditreferencenigeria.net/crccreditbureau_Datasubmission_Webservice/JSON/api/';
+        // 'https://files.creditreferencenigeria.net/crccreditbureau_Datasubmission_Webservice/JSON/api/';
+        $this->reportBaseUrl = config('services.crc.reporting_base_url');
         $this->reportUserId = config('services.crc.reporting_userid', 'crcautomations');
     }
 
