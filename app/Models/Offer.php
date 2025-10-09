@@ -24,7 +24,8 @@ class Offer extends Model
         'cycles',
         'currency',
         'expiry_date',
-        'default_fees_addition_days'
+        'default_fees_addition_days',
+        'is_test'
     ];
 
     /**
@@ -40,6 +41,7 @@ class Offer extends Model
         'default_interest' => 'float',
         'tenure' => 'integer',
         'cycles' => 'integer',
+        'is_test' => 'boolean',
         'default_fees_addition_days' => 'integer'
     ];
 
