@@ -8,7 +8,7 @@ COMPOSE_FILE="docker-compose.staging.yml"
 echo "🚀 Starting production deployment..."
 
 # 1. Pull latest code
-echo "🔄 Updating codebase..."
+echo "🔄 Updating codebase... with CI CD"
 git fetch origin main
 LOCAL=$(git rev-parse HEAD)
 REMOTE=$(git rev-parse origin/main)
