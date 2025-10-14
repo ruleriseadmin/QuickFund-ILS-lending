@@ -65,7 +65,7 @@ class Kernel extends ConsoleKernel
 
         // Send loan overdue message for loans overdue for two weeks
         $schedule->command('loans:overdue-two-weeks')->timezone($timezone)->dailyAt('12:00')->withoutOverlapping()->runInBackground();
-        
+
         // Send loan overdue message for loans overdue for three weeks
         $schedule->command('loans:overdue-three-weeks')->timezone($timezone)->dailyAt('12:00')->withoutOverlapping()->runInBackground();
 
@@ -98,6 +98,9 @@ class Kernel extends ConsoleKernel
 
         // Clean the records of uncollected loan offers
         $schedule->command('loans:clean')->timezone($timezone)->hourly()->withoutOverlapping()->runInBackground();
+
+        // Send weekly credit report every Friday
+        $schedule->command('credit:report')->timezone($timezone)->weeklyOn(5, '00:00')->withoutOverlapping()->runInBackground();
     }
 
     /**
@@ -107,7 +110,7 @@ class Kernel extends ConsoleKernel
      */
     protected function commands()
     {
-        $this->load(__DIR__.'/Commands');
+        $this->load(__DIR__ . '/Commands');
 
         require base_path('routes/console.php');
     }
