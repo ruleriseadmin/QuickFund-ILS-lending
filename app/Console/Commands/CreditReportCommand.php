@@ -94,11 +94,12 @@ class CreditReportCommand extends Command
         Customer::whereHas('loans')
             ->chunk($batchSize, function ($customers) use ($batch, $token) {
                 foreach ($customers as $customer) {
-                    $jobs = [new ProcessCrcReport($customer)];
+                    // $jobs = [new ProcessCrcReport($customer)];
+                    $jobs = [];
 
                     // ✅ Only add FirstCentral job if token is present
                     if ($token) {
-                        // $jobs[] = new ProcessFirstCentralReport($customer, $token);
+                        $jobs[] = new ProcessFirstCentralReport($customer, $token);
                     }
 
                     $batch->add($jobs);
