@@ -43,7 +43,14 @@ class LoanOffer extends Model
      *
      * @var array<string, string>
      */
-    protected $casts = [
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
         'offer_id' => 'integer',
         'customer_id' => 'integer',
         'amount' => 'integer',
@@ -55,6 +62,7 @@ class LoanOffer extends Model
         'is_test' => 'boolean',
         'default_fees_addition_days' => 'integer'
     ];
+    }
 
     /**
      * The model's attributes.

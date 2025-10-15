@@ -23,9 +23,17 @@ class CrcHistory extends Model
      *
      * @var array<string, string>
      */
-    protected $casts = [
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
         'date' => 'datetime:Y-m-d'
     ];
+    }
 
     /**
      * The relationship with the Crc model

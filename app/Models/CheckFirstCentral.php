@@ -18,10 +18,18 @@ class CheckFirstCentral extends Model
         'timestamp',
     ];
 
-    protected $casts = [
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
         'response' => 'array',
         'timestamp' => 'datetime',
     ];
+    }
 
     public static function createCheck(?int $customerId, ?string $bvn, $response = null)
     {

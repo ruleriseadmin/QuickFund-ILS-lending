@@ -34,7 +34,14 @@ class Crc extends Model
      *
      * @var array<string, string>
      */
-    protected $casts = [
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
         'customer_id' => 'integer',
         'summary_of_performance' => 'array',
         'bvn_report_detail' => 'array',
@@ -48,6 +55,7 @@ class Crc extends Model
         'header' => 'array',
         'total_delinquencies' => 'integer'
     ];
+    }
 
     /**
      * The relationship with the Customer model

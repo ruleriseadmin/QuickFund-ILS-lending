@@ -43,11 +43,19 @@ class CollectionCase extends Model
      *
      * @var array<string, string>
      */
-    protected $casts = [
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
         'user_id' => 'integer',
         'loan_offer_id' => 'integer',
         'assigned_at' => 'datetime',
     ];
+    }
 
     /**
      * The relationship with the LoanOffer model

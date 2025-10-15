@@ -33,7 +33,14 @@ class Offer extends Model
      *
      * @var array<string, string>
      */
-    protected $casts = [
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
         'amount' => 'integer',
         'fees' => 'array',
         'expiry_date' => 'date:Y-m-d',
@@ -44,6 +51,7 @@ class Offer extends Model
         'is_test' => 'boolean',
         'default_fees_addition_days' => 'integer'
     ];
+    }
 
     /**
      * The relationship with the LoanOffer model

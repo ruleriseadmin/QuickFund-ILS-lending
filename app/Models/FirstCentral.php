@@ -30,7 +30,14 @@ class FirstCentral extends Model
      *
      * @var array<string, string>
      */
-    protected $casts = [
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
         'customer_id' => 'integer',
         'subject_list' => 'array', 
         'personal_details_summary' => 'array', 
@@ -40,6 +47,7 @@ class FirstCentral extends Model
         'enquiry_details' => 'array',
         'total_delinquencies' => 'integer'
     ];
+    }
 
     /**
      * The relationship with the Customer model

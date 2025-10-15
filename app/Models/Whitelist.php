@@ -35,7 +35,15 @@ class Whitelist extends Model
      *
      * @var array<string, string>
      */
-    protected $casts = [
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
         'completed' => 'boolean'
     ];
+    }
 }

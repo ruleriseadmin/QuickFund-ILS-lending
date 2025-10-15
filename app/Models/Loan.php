@@ -37,13 +37,21 @@ class Loan extends Model
      *
      * @var array<string, string>
      */
-    protected $casts = [
-        'loan_offer_id' => 'integer',
-        'due_date' => 'date:Y-m-d',
-        'next_due_date' => 'date:Y-m-d',
-        'first_central_reported_at' => 'datetime',
-        'crc_reported_at' => 'datetime',
-    ];
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'loan_offer_id' => 'integer',
+            'due_date' => 'date:Y-m-d',
+            'next_due_date' => 'date:Y-m-d',
+            'first_central_reported_at' => 'datetime',
+            'crc_reported_at' => 'datetime',
+        ];
+    }
 
     /**
      * The model's attributes.

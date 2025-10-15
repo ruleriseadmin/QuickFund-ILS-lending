@@ -67,10 +67,18 @@ class Transaction extends Model
      *
      * @var array<string, string>
      */
-    protected $casts = [
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
         'loan_id' => 'integer',
         'transaction_date' => 'datetime'
     ];
+    }
 
     /**
      * The model's attributes.

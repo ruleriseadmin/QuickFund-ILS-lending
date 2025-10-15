@@ -28,13 +28,21 @@ class CollectionCaseRemark extends Model
      *
      * @var array<string, string>
      */
-    protected $casts = [
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
         'collection_case_id' => 'integer',
         'user_id' => 'integer',
         'remarked_at' => 'datetime',
         'promised_to_pay_at' => 'datetime:Y-m-d',
         'already_paid_at' => 'datetime:Y-m-d'
     ];
+    }
 
     /**
      * The relationship with the User model

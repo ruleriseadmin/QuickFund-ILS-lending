@@ -40,10 +40,18 @@ class Customer extends Model
      *
      * @var array<string, string>
      */
-    protected $casts = [
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
         'crc_check_last_requested_at' => 'datetime:Y-m-d',
         'first_central_check_last_requested_at' => 'datetime:Y-m-d',
     ];
+    }
 
     /**
      * The relationship with the Loan model

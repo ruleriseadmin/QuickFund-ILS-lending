@@ -54,7 +54,14 @@ class Setting extends Model
      *
      * @var array<string, string>
      */
-    protected $casts = [
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
         'minimum_loan_amount' => 'integer',
         'maximum_loan_amount' => 'integer',
         'loan_tenures' => 'array',
@@ -82,4 +89,5 @@ class Setting extends Model
         'maximum_days_for_demotion' => 'integer',
         'days_to_blacklist_customer' => 'integer'
     ];
+    }
 }

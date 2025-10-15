@@ -11,7 +11,7 @@ use Laravel\Sanctum\HasApiTokens;
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
-    
+
     public const APPLICATION_ID = 1;
 
     /**
@@ -49,11 +49,19 @@ class User extends Authenticatable
      *
      * @var array<string, string>
      */
-    protected $casts = [
-        'role_id' => 'integer',
-        'department_id' => 'integer',
-        'email_verified_at' => 'datetime',
-    ];
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'role_id' => 'integer',
+            'department_id' => 'integer',
+            'email_verified_at' => 'datetime',
+        ];
+    }
 
     /**
      * The scope for interswitch
@@ -69,7 +77,7 @@ class User extends Authenticatable
     public function scopeUsers($query)
     {
         return $query->whereNotIn('id', [
-            // self::APPLICATION_ID,
+                // self::APPLICATION_ID,
             self::INTERSWITCH_ID
         ]);
     }
@@ -80,10 +88,10 @@ class User extends Authenticatable
     public function scopeStaff($query)
     {
         return $query->where(fn($query2) => $query2->whereNotIn('id', [
-                                                        // self::APPLICATION_ID,
-                                                        self::INTERSWITCH_ID
-                                                    ])
-                                                    ->whereNot('role_id', Role::ADMINISTRATOR));
+                // self::APPLICATION_ID,
+            self::INTERSWITCH_ID
+        ])
+            ->whereNot('role_id', Role::ADMINISTRATOR));
     }
 
     /**
