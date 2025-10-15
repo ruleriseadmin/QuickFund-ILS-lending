@@ -2,11 +2,11 @@
 services:
     app:
         build:
-            context: ./docker/8.1
+            context: ./docker/8.3
             dockerfile: Dockerfile
             args:
                 WWWGROUP: "${WWWGROUP}"
-        image: sail-8.1/app
+        image: sail-8.3/app
         restart: always
         extra_hosts:
             - "host.docker.internal:host-gateway"
@@ -98,11 +98,11 @@ services:
             - sail
     horizon:
         build:
-            context: ./docker/8.1
+            context: ./docker/8.3
             dockerfile: Dockerfile
             args:
                 WWWGROUP: "${WWWGROUP}"
-        image: sail-8.1/app
+        image: sail-8.3/app
         restart: always
         extra_hosts:
             - "host.docker.internal:host-gateway"
