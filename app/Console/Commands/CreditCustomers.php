@@ -39,19 +39,21 @@ class CreditCustomers extends Command
          * This will help us to credit those customers
          */
         $acceptedLoanOffers = LoanOffer::with(['loan', 'customer.virtualAccount'])
-                                    ->where('status', LoanOffer::ACCEPTED)
-                                    ->whereHas('loan')
-                                    ->whereDoesntHave('loan.transactions', fn($query) => $query->where('type', Transaction::CREDIT))
-                                    ->get();
+            ->where('status', LoanOffer::ACCEPTED)
+            ->whereHas('loan')
+            ->whereDoesntHave('loan.transactions', fn($query) => $query->where('type', Transaction::CREDIT))
+            ->get();
 
         foreach ($acceptedLoanOffers as $acceptedLoanOffer) {
             // Check if the customer has an outstanding loan
-            if (LoanOffer::where('customer_id', $acceptedLoanOffer->customer->id)
-                        ->whereIn('status', [
-                            LoanOffer::OPEN,
-                            LoanOffer::OVERDUE
-                        ])
-                        ->exists()) {
+            if (
+                LoanOffer::where('customer_id', $acceptedLoanOffer->customer->id)
+                    ->whereIn('status', [
+                        LoanOffer::OPEN,
+                        LoanOffer::OVERDUE
+                    ])
+                    ->exists()
+            ) {
                 continue;
             }
 
@@ -59,8 +61,10 @@ class CreditCustomers extends Command
              * We make sure that the user does not have any transaction. This is already done by the command
              * that calls the job but we are calling it again just in case.
              */
-            if ($acceptedLoanOffer->loan->transactions()
-                                        ->doesntExist()) {
+            if (
+                $acceptedLoanOffer->loan->transactions()
+                    ->doesntExist()
+            ) {
                 // Create the record of the transaction
                 $transaction = $acceptedLoanOffer->loan->transactions()->create([
                     'amount' => $acceptedLoanOffer->amount
@@ -98,8 +102,8 @@ class CreditCustomers extends Command
                             // Send SMS to the customer
                             SendSms::dispatch(
                                 __('interswitch.disbursement_message', [
-                                    'amount' => config('quickfund.currency_representation').number_format($higherDenominationAmount, 2),
-                                    'service_fee' => config('quickfund.currency_representation').number_format(0, 2),
+                                    'amount' => config('quickfund.currency_representation') . number_format($higherDenominationAmount, 2),
+                                    'service_fee' => config('quickfund.currency_representation') . number_format(0, 2),
                                     'due_date' => $acceptedLoanOffer->loan->due_date->format('d-m-Y'),
                                     'ussd_repayment_amount' => ceil($higherDenominationRepaymentAmount),
                                     'virtual_account_details' => isset($acceptedLoanOffer->customer->virtualAccount) ? "or transfer to {$acceptedLoanOffer->customer->virtualAccount->bank_name}, Acc No: {$acceptedLoanOffer->customer->virtualAccount->account_number}" : ''
@@ -126,12 +130,12 @@ class CreditCustomers extends Command
                          * background
                          */
                         RequeryTransaction::dispatch($transaction, 'credit')
-                                        ->delay(7200);
+                            ->delay(7200);
                     }
                 } catch (Throwable $e) {
                     // Error occurred while initiating credit
                     RequeryTransaction::dispatch($transaction, 'credit')
-                                    ->delay(7200);
+                        ->delay(7200);
                 }
             }
         }
