@@ -32,8 +32,9 @@ class CreditReportCompleted extends Mailable
      */
     public function envelope(): Envelope
     {
+        $bureau = $this->summary['bureau'] ?? 'Credit Bureau';
         return new Envelope(
-            subject: 'Credit Report Batch Completed Successfully',
+            subject: "{$bureau} - Credit Report Batch Completed Successfully",
         );
     }
 

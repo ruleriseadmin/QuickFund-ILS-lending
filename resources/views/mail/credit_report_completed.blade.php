@@ -6,7 +6,7 @@
         body { font-family: Arial, sans-serif; }
         .summary { margin-top: 20px; border-collapse: collapse; width: 100%; }
         .summary th, .summary td { border: 1px solid #ddd; padding: 8px; }
-        .summary th { background-color: #f2f2f2; }
+        .summary th { background-color: #f2f2f2; text-align: left; width: 200px; }
     </style>
 </head>
 <body>
@@ -17,32 +17,36 @@
 
     <table class="summary">
         <tr>
-            <th>Batch ID</th>
-            <td>{{ $summary['batch_id'] }}</td>
+            <th>Bureau</th>
+            <td>{{ $summary['bureau'] ?? 'N/A' }}</td>
         </tr>
-        {{-- <tr>
-            <th>Name</th>
-            <td>{{ $summary['name'] }}</td>
-        </tr> --}}
+        <tr>
+            <th>Batch ID</th>
+            <td>{{ $summary['batch_id'] ?? 'N/A' }}</td>
+        </tr>
+        <tr>
+            <th>Total Customers</th>
+            <td>{{ $summary['total_customers'] ?? 0 }}</td>
+        </tr>
         <tr>
             <th>Total Jobs</th>
-            <td>{{ $summary['total_jobs'] }}</td>
+            <td>{{ $summary['total_jobs'] ?? 0 }}</td>
         </tr>
         <tr>
             <th>Processed Jobs</th>
-            <td>{{ $summary['processed_jobs'] }}</td>
+            <td>{{ $summary['processed_jobs'] ?? 0 }}</td>
         </tr>
         <tr>
             <th>Pending Jobs</th>
-            <td>{{ $summary['pending_jobs'] }}</td>
+            <td>{{ $summary['pending_jobs'] ?? 0 }}</td>
         </tr>
         <tr>
             <th>Failed Jobs</th>
-            <td>{{ $summary['failed_jobs'] }}</td>
+            <td>{{ $summary['failed_jobs'] ?? 0 }}</td>
         </tr>
         <tr>
             <th>Completed At</th>
-            <td>{{ $summary['created_at'] }}</td>
+            <td>{{ $summary['created_at'] ?? now()->toDateTimeString() }}</td>
         </tr>
     </table>
 

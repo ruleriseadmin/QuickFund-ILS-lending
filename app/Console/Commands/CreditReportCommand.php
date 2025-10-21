@@ -38,7 +38,7 @@ class CreditReportCommand extends Command
     public function handle()
     {
         $batchSize = 100;
-        // Step 1: Authenticate
+        // Step 1: Authenticate for First Central
         $loginResponse = Http::post(config('services.first_central.reporting_base_url') . '/login', [
             'username' => config('services.first_central.reporting_username'),
             'password' => config('services.first_central.reporting_password'),
@@ -57,19 +57,20 @@ class CreditReportCommand extends Command
             ]);
         }
 
+        // Total customers with loans (used for reporting)
         $totalCustomers = Customer::whereHas('loans')->count();
 
-        $batch = Bus::batch([])
+        // Create CRC batch
+        $crcBatch = Bus::batch([])
             ->then(function (Batch $batch) use ($totalCustomers) {
-                // Collect details for the email
                 $summary = [
+                    'bureau' => 'CRC',
                     'batch_id' => $batch->id,
                     'total_jobs' => $batch->totalJobs,
                     'pending_jobs' => $batch->pendingJobs,
                     'processed_jobs' => $batch->processedJobs(),
                     'failed_jobs' => $batch->failedJobs,
                     'total_customers' => $totalCustomers,
-                    // 'created_at' => now()->longRelativeToNowDiffForHumans(),
                     'created_at' => now()->toDateTimeString(),
                 ];
 
@@ -77,8 +78,7 @@ class CreditReportCommand extends Command
                     ->send(new CreditReportCompleted($summary));
             })
             ->catch(function (Batch $batch, Throwable $e) {
-                // 🚨 Log failure
-                Log::error('Credit report batch failed', [
+                Log::error('CRC credit report batch failed', [
                     'batch_id' => $batch->id,
                     'name' => $batch->name,
                     'total_jobs' => $batch->totalJobs,
@@ -86,28 +86,56 @@ class CreditReportCommand extends Command
                     'exception' => $e->getMessage(),
                     'trace' => $e->getTraceAsString(),
                 ]);
-
-
             })
             ->dispatch();
 
+        // Create First Central batch only if token is present
+        $firstCentralBatch = null;
+        if ($token) {
+            $firstCentralBatch = Bus::batch([])
+                ->then(function (Batch $batch) use ($totalCustomers) {
+                    $summary = [
+                        'bureau' => 'First Central',
+                        'batch_id' => $batch->id,
+                        'total_jobs' => $batch->totalJobs,
+                        'pending_jobs' => $batch->pendingJobs,
+                        'processed_jobs' => $batch->processedJobs(),
+                        'failed_jobs' => $batch->failedJobs,
+                        'total_customers' => $totalCustomers,
+                        'created_at' => now()->toDateTimeString(),
+                    ];
+
+                    Mail::to(config('services.credit_report.feedback_email', 'pugnac55@gmail.com'))
+                        ->send(new CreditReportCompleted($summary));
+                })
+                ->catch(function (Batch $batch, Throwable $e) {
+                    Log::error('First Central credit report batch failed', [
+                        'batch_id' => $batch->id,
+                        'name' => $batch->name,
+                        'total_jobs' => $batch->totalJobs,
+                        'failed_jobs' => $batch->failedJobs,
+                        'exception' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString(),
+                    ]);
+                })
+                ->dispatch();
+        }
+
+        // Chunk and add jobs to the appropriate batches
         Customer::whereHas('loans')
-            ->chunk($batchSize, function ($customers) use ($batch, $token) {
+            ->chunk($batchSize, function ($customers) use ($crcBatch, $firstCentralBatch, $token) {
                 foreach ($customers as $customer) {
-                    $jobs = [new ProcessCrcReport($customer)];
+                    // Add CRC job to CRC batch
+                    $crcBatch->add([new ProcessCrcReport($customer)]);
 
-                    // ✅ Only add FirstCentral job if token is present
-                    if ($token) {
-                        $jobs[] = new ProcessFirstCentralReport($customer, $token);
+                    // Add First Central job to its batch if available
+                    if ($token && $firstCentralBatch) {
+                        $firstCentralBatch->add([new ProcessFirstCentralReport($customer, $token)]);
                     }
-
-                    $batch->add($jobs);
                 }
             });
 
-
-        $this->info('Credit report jobs dispatched successfully.');
+        $this->info('Credit report jobs dispatched successfully for CRC' . ($token ? ' and First Central' : '') . '.');
         return Command::SUCCESS;
     }
-
 }
