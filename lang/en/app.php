@@ -15,6 +15,7 @@ return [
 
     'request_successful' => 'Request successful.',
     'unauthenticated' => 'Unauthenticated.',
+    'external_service_unavailable' => 'The credit bureau service is temporarily unavailable. Please try again in a few minutes..',
     'unauthorized' => 'This action is unauthorized.',
     'invalid_credentials' => 'Invalid credentials.',
     'forbidden' => 'You are not authorized to perform this action.',

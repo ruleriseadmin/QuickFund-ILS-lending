@@ -316,10 +316,17 @@ class OfferController extends Controller
             // }
         }
 
+
         /**
          * Perform the Credit Bureau checks on the customer
          */
-        $customer->performCreditBureauChecks();
+        try {
+            $customer->performCreditBureauChecks();
+        } catch (\Illuminate\Http\Client\RequestException $e) {
+            return $this->sendInterswitchCustomMessage('104', __('app.external_service_unavailable'), 503);
+        } catch (\Throwable $e) {
+            return $this->sendInterswitchCustomMessage('104', __('app.external_service_unavailable'), 503);
+        }
 
         // Accept the offer
         try {
