@@ -33,7 +33,7 @@ class AcceptOfferRequest extends FormRequest
             'customerId' => ['required', new Phone],
             'destinationAccountNumber' => ['required'],
             'destinationBankCode' => ['required'],
-            'token' => ['required'],
+            // 'token' => ['required'],
             'loanReferenceId' => ['required']
         ];
     }
