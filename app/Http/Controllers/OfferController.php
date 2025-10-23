@@ -253,11 +253,6 @@ class OfferController extends Controller
 
         $loanOffer = $customer->loanOffers()->findOr($data['offerId'], fn() => throw new UnknownOfferException);
 
-        // dd($loanOffer);
-
-        $loanOffer->status = LoanOffer::NONE;
-        $loanOffer->save();
-
         // Check if the offer has expired
         if ($loanOffer->hasExpired()) {
             throw new OfferExpiredException;
