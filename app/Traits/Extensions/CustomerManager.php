@@ -2,6 +2,7 @@
 
 namespace App\Traits\Extensions;
 
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\{Carbon, Arr};
 use App\Models\{Blacklist, Offer, LoanOffer, Setting, Whitelist, TestList};
@@ -141,23 +142,170 @@ trait CustomerManager
 
     /**
      * Perform the credit bureau checks
+     * 
+     * @return array Array containing the results of each check
+     * @throws CustomerIneligibleException When customer fails credit bureau checks
+     * @throws \Exception When there's a network/service issue
      */
-    public function performCreditBureauChecks()
-    {
-        $setting = Setting::find(Setting::MAIN_ID);
+    // public function performCreditBureauChecks()
+    // {
+    //     $setting = Setting::find(Setting::MAIN_ID);
 
-        info($setting);
-        info($this);
+    //     $results = [
+    //         'crc' => ['passed' => false, 'error' => null, 'hasNetworkError' => false],
+    //         'firstCentral' => ['passed' => false, 'error' => null, 'hasNetworkError' => false],
+    //     ];
+
+    //     // CRC Check
+    //     try {
+    //         $results['crc']['passed'] = app()->make(CrcService::class)->passesCheck($this, $setting);
+    //     } catch (\Illuminate\Http\Client\RequestException | \Illuminate\Http\Client\ConnectionException $e) {
+    //         $results['crc']['hasNetworkError'] = true;
+    //         $results['crc']['error'] = $e->getMessage();
+    //         Log::error('CRC check network error', [
+    //             'customer_id' => $this->id,
+    //             'error' => $e->getMessage()
+    //         ]);
+    //     } catch (\Throwable $e) {
+    //         $results['crc']['error'] = $e->getMessage();
+    //         Log::error('CRC check failed', [
+    //             'customer_id' => $this->id,
+    //             'error' => $e->getMessage()
+    //         ]);
+    //     }
+
+    //     // First Central Check
+    //     try {
+    //         $results['firstCentral']['passed'] = app()->make(FirstCentralService::class)->passesCheck($this, $setting);
+    //     } catch (\Illuminate\Http\Client\RequestException | \Illuminate\Http\Client\ConnectionException $e) {
+    //         $results['firstCentral']['hasNetworkError'] = true;
+    //         $results['firstCentral']['error'] = $e->getMessage();
+    //         Log::error('First Central check network error', [
+    //             'customer_id' => $this->id,
+    //             'error' => $e->getMessage()
+    //         ]);
+    //     } catch (\Throwable $e) {
+    //         $results['firstCentral']['error'] = $e->getMessage();
+    //         Log::error('First Central check failed', [
+    //             'customer_id' => $this->id,
+    //             'error' => $e->getMessage()
+    //         ]);
+    //     }
+
+    //     // If there were network errors, throw exception to be caught in accept method
+    //     if ($results['crc']['hasNetworkError'] || $results['firstCentral']['hasNetworkError']) {
+    //         throw new \Exception('External service unavailable');
+    //     }
+
+    //     // If either check failed (not due to network), customer is ineligible
+    //     if (!$results['crc']['passed'] || !$results['firstCentral']['passed']) {
+    //         Log::warning('Customer failed credit bureau checks', [
+    //             'customer_id' => $this->id,
+    //             'results' => $results
+    //         ]);
+    //         throw new CustomerIneligibleException;
+    //     }
+    //     Log::info('Credit bureau checks results', [
+    //         'customer_id' => $this->id,
+    //         'results' => $results
+    //     ]);
+    //     return $results;
+    // }
 
         /**
-         * Check if the customer fails any credit bureau checks
+         * Perform the credit bureau checks
+         * 
+         * @return array Array containing the results of each check
+         * @throws CustomerIneligibleException When customer fails credit bureau checks
+         * @throws \Exception When all checks have network errors
          */
-        if (
-            !app()->make(CrcService::class)->passesCheck($this, $setting) ||
-            !app()->make(FirstCentralService::class)->passesCheck($this, $setting)
-        ) {
+        public function performCreditBureauChecks()
+        {
+            $setting = Setting::find(Setting::MAIN_ID);
+
+            $results = [
+                'crc' => ['passed' => false, 'error' => null, 'hasNetworkError' => false],
+                'firstCentral' => ['passed' => false, 'error' => null, 'hasNetworkError' => false],
+            ];
+
+            // CRC Check
+            try {
+                $results['crc']['passed'] = app()->make(CrcService::class)->passesCheck($this, $setting);
+            } catch (\Illuminate\Http\Client\RequestException | \Illuminate\Http\Client\ConnectionException $e) {
+                $results['crc']['hasNetworkError'] = true;
+                $results['crc']['error'] = $e->getMessage();
+                Log::error('CRC check network error', [
+                    'customer_id' => $this->id,
+                    'error' => $e->getMessage()
+                ]);
+            } catch (\Throwable $e) {
+                $results['crc']['error'] = $e->getMessage();
+                Log::error('CRC check failed', [
+                    'customer_id' => $this->id,
+                    'error' => $e->getMessage()
+            ]);
+        }
+
+        // First Central Check
+        try {
+            $results['firstCentral']['passed'] = app()->make(FirstCentralService::class)->passesCheck($this, $setting);
+        } catch (\Illuminate\Http\Client\RequestException | \Illuminate\Http\Client\ConnectionException $e) {
+            $results['firstCentral']['hasNetworkError'] = true;
+            $results['firstCentral']['error'] = $e->getMessage();
+            Log::error('First Central check network error', [
+                'customer_id' => $this->id,
+                'error' => $e->getMessage()
+            ]);
+        } catch (\Throwable $e) {
+            $results['firstCentral']['error'] = $e->getMessage();
+            Log::error('First Central check failed', [
+                'customer_id' => $this->id,
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        // If BOTH checks have network errors, we can't proceed
+        if ($results['crc']['hasNetworkError'] && $results['firstCentral']['hasNetworkError']) {
+            throw new \Exception('All external services unavailable');
+        }
+
+        // Check if customer passed the available checks
+        // If one has network error, we only check the other one
+        $hasValidCheck = false;
+        $passedValidChecks = true;
+
+        if (!$results['crc']['hasNetworkError']) {
+            $hasValidCheck = true;
+            if (!$results['crc']['passed']) {
+                $passedValidChecks = false;
+            }
+        }
+
+        if (!$results['firstCentral']['hasNetworkError']) {
+            $hasValidCheck = true;
+            if (!$results['firstCentral']['passed']) {
+                $passedValidChecks = false;
+            }
+        }
+
+        // If we have at least one valid check and customer failed it
+        if ($hasValidCheck && !$passedValidChecks) {
+            Log::warning('Customer failed credit bureau checks', [
+                'customer_id' => $this->id,
+                'results' => $results
+            ]);
             throw new CustomerIneligibleException;
         }
+
+        // Log if we're proceeding with only one check due to network error
+        if ($results['crc']['hasNetworkError'] || $results['firstCentral']['hasNetworkError']) {
+            Log::warning('Proceeding with partial credit bureau checks due to network error', [
+                'customer_id' => $this->id,
+                'results' => $results
+            ]);
+        }
+
+        return $results;
     }
 
     /**

@@ -15,6 +15,7 @@ class Crc extends Model
      * @var array<int, string>
      */
     protected $fillable = [
+        "customer_id",
         'summary_of_performance',
         'bvn_report_detail',
         'credit_score_details',
@@ -25,6 +26,8 @@ class Crc extends Model
         'classification_product_type',
         'profile_details',
         'header',
+        'body',
+        'confidence_score',
         'passes_recent_check',
         'total_delinquencies'
     ];
@@ -42,19 +45,21 @@ class Crc extends Model
     protected function casts(): array
     {
         return [
-        'customer_id' => 'integer',
-        'summary_of_performance' => 'array',
-        'bvn_report_detail' => 'array',
-        'credit_score_details' => 'array',
-        'credit_facilities_summary' => 'array',
-        'contact_history' => 'array',
-        'address_history' => 'array',
-        'classification_institution_type' => 'array',
-        'classification_product_type' => 'array',
-        'profile_details' => 'array',
-        'header' => 'array',
-        'total_delinquencies' => 'integer'
-    ];
+            'customer_id' => 'integer',
+            'summary_of_performance' => 'array',
+            'bvn_report_detail' => 'array',
+            'credit_score_details' => 'array',
+            'credit_facilities_summary' => 'array',
+            'contact_history' => 'array',
+            'address_history' => 'array',
+            'classification_institution_type' => 'array',
+            'classification_product_type' => 'array',
+            'profile_details' => 'array',
+            'header' => 'array',
+            'body' => 'array',
+            'confidence_score' => 'float',
+            'total_delinquencies' => 'integer'
+        ];
     }
 
     /**

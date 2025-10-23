@@ -11,6 +11,7 @@ use App\Exceptions\Interswitch\{
     AccountNumberBlockedException,
     CustomException as InterswitchCustomException,
     NoOfferException,
+    CustomerIneligibleException,
     UnknownOfferException,
     OfferExpiredException,
     InternalCustomerNotFoundException,
@@ -252,6 +253,11 @@ class OfferController extends Controller
 
         $loanOffer = $customer->loanOffers()->findOr($data['offerId'], fn() => throw new UnknownOfferException);
 
+        // dd($loanOffer);
+
+        $loanOffer->status = LoanOffer::NONE;
+        $loanOffer->save();
+
         // Check if the offer has expired
         if ($loanOffer->hasExpired()) {
             throw new OfferExpiredException;
@@ -322,9 +328,17 @@ class OfferController extends Controller
          */
         try {
             $customer->performCreditBureauChecks();
-        } catch (\Illuminate\Http\Client\RequestException $e) {
-            return $this->sendInterswitchCustomMessage('104', __('app.external_service_unavailable'), 503);
+
+            // If we reach here, all checks passed
+            // Log::info('Customer passed all credit bureau checks', [
+            //     'customer_id' => $customer->id
+            // ]);
+
+        } catch (CustomerIneligibleException $e) {
+            // Customer failed credit checks (business logic failure, not network issue)
+            throw $e;
         } catch (\Throwable $e) {
+            // Network or other system errors
             return $this->sendInterswitchCustomMessage('104', __('app.external_service_unavailable'), 503);
         }
 

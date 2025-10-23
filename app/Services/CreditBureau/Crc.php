@@ -54,9 +54,6 @@ class Crc implements CreditBureau
             return false;
         }
 
-        // Load the crc relationship
-        $customer->load(['crc']);
-
         /**
          * Check if the CRC request should not be made then we use the CRC records stored to check if the
          * customer passes CRC check
@@ -89,9 +86,10 @@ class Crc implements CreditBureau
              * We perform a merge request to merge the data
              */
             $mergeRequestBody = $this->mergeRequest($basicRequestBody);
+            $completeMerge = $this->mergeMissingRecords($basicRequestBody, $mergeRequestBody);
 
             // CRC data merging successful. Save the fresh CRC record
-            $crc = $this->saveRecord($customer, $mergeRequestBody, $setting);
+            $crc = $this->saveRecord($customer, $completeMerge, $setting);
 
             // Check if CRC check is passed based on application standards
             return $this->passedCheckByApplication($crc, $setting);
@@ -100,6 +98,67 @@ class Crc implements CreditBureau
         // Fallback to something weird
         return false;
     }
+
+    private function mergeMissingRecords(array $basicRequestBody, array $mergeRequestBody): array
+    {
+        // Navigate to search list in the basic request
+        $basicList = data_get($basicRequestBody, 'ConsumerSearchResultResponse.BODY.SEARCHRESULTLIST', []);
+
+        // Get reference to merge response
+        $mergedBody = data_get($mergeRequestBody, 'ConsumerHitResponse.BODY', []);
+
+        // Track if we make any changes
+        $updated = false;
+
+        // Loop through all basic entries
+        foreach ($basicList as $basicEntry) {
+            $bureaId = $basicEntry['BUREAUID'] ?? null;
+            if (!$bureaId) {
+                continue;
+            }
+
+            // Check if same BUREAUID exists somewhere in merged body
+            $exists = $this->deepSearchArray($mergedBody, $bureaId);
+
+            if (!$exists) {
+                // Add a minimal placeholder record under SEARCHRESULTLIST
+                $updated = true;
+                $mergedBody['HEADER']['SEARCHRESULTLIST']['SEARCHRESULTITEM'][] = [
+                    'ADDRESSES' => $basicEntry['ADDRESSES'] ?? '',
+                    'BUREAUID' => $bureaId,
+                    'CONFIDENCESCORE' => $basicEntry['CONFIDENCESCORE'] ?? '',
+                    'IDENTIFIERS' => $basicEntry['IDENTIFIERS'] ?? '',
+                    'NAME' => $basicEntry['NAME'] ?? '',
+                    'SURROGATES' => $basicEntry['SURROGATES'] ?? '',
+                ];
+            }
+        }
+
+        if ($updated) {
+            // Update the merged structure
+            data_set($mergeRequestBody, 'ConsumerHitResponse.BODY', $mergedBody);
+        }
+
+        return $mergeRequestBody;
+    }
+
+    /**
+     * Deeply searches an array for a given value (e.g., BUREAUID)
+     */
+    private function deepSearchArray(array $array, $needle): bool
+    {
+        foreach ($array as $key => $value) {
+            if (is_array($value)) {
+                if ($this->deepSearchArray($value, $needle)) {
+                    return true;
+                }
+            } elseif ($value === $needle) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     /**
      * CRC basic request to get customer details based on BVN
@@ -246,58 +305,128 @@ class Crc implements CreditBureau
     /**
      * Update the necessary CRC record of the customer
      */
-    public function saveRecord($customer, $responseBody, $setting)
+    // public function saveRecord($customer, $responseBody, $setting)
+    // {
+    //     $body = $responseBody['ConsumerHitResponse']['BODY'];
+    //     $header = $responseBody['ConsumerHitResponse']['HEADER'];
+
+    //     return DB::transaction(function () use ($body, $header, $customer, $setting) {
+    //         $crc = $customer->crc()->updateOrCreate([], [
+    //             'summary_of_performance' => $body['SummaryOfPerformance'],
+    //             'bvn_report_detail' => $body['ReportDetailBVN'],
+    //             'contact_history' => $body['ContactHistory'],
+    //             'address_history' => $body['AddressHistory'],
+    //             'classification_institution_type' => $body['ClassificationInsType'],
+    //             'classification_product_type' => $body['ClassificationProdType'],
+    //             'credit_score_details' => $body['CREDIT_SCORE_DETAILS'],
+    //             'credit_facilities_summary' => [
+    //                 'credit' => $body['CREDIT_NANO_SUMMARY'],
+    //                 'mf_credit' => $body['MFCREDIT_NANO_SUMMARY'],
+    //                 'mg_credit' => $body['MGCREDIT_NANO_SUMMARY']
+    //             ],
+    //             'profile_details' => $body['NANO_CONSUMER_PROFILE'],
+    //             'header' => $header,
+    //         ]);
+
+    //         // Get the total number of delinquencies
+    //         $numberOfDelinquencies = (
+    //             (int) $crc->credit_facilities_summary['credit']['SUMMARY']['NO_OF_DELINQCREDITFACILITIES'] +
+    //             (int) $crc->credit_facilities_summary['mf_credit']['SUMMARY']['NO_OF_DELINQCREDITFACILITIES'] +
+    //             (int) $crc->credit_facilities_summary['mg_credit']['SUMMARY']['NO_OF_DELINQCREDITFACILITIES']
+    //         );
+
+    //         // Update the total number of delinquencies
+    //         $crc->update([
+    //             'total_delinquencies' => $numberOfDelinquencies
+    //         ]);
+
+    //         if ($this->passesCheckPerformance($crc, $setting)) {
+    //             $crc->update([
+    //                 'passes_recent_check' => 'YES',
+    //             ]);
+    //         } else {
+    //             $crc->update([
+    //                 'passes_recent_check' => 'NO',
+    //             ]);
+    //         }
+
+    //         $customer->forceFill([
+    //             'crc_check_last_requested_at' => now()
+    //         ])->save();
+
+    //         return $crc;
+    //     });
+    // }
+
+    /**
+     * Update the necessary CRC record of the customer
+     */
+    public function saveRecord($customer, array $responseBody, $setting)
     {
-        $body = $responseBody['ConsumerHitResponse']['BODY'];
-        $header = $responseBody['ConsumerHitResponse']['HEADER'];
+        // Extract BODY and HEADER safely
+        $body = data_get($responseBody, 'ConsumerHitResponse.BODY', []);
+        $header = data_get($responseBody, 'ConsumerHitResponse.HEADER', []);
 
-        return DB::transaction(function () use ($body, $header, $customer, $setting) {
-            $crc = $customer->crc()->updateOrCreate([], [
-                'summary_of_performance' => $body['SummaryOfPerformance'],
-                'bvn_report_detail' => $body['ReportDetailBVN'],
-                'contact_history' => $body['ContactHistory'],
-                'address_history' => $body['AddressHistory'],
-                'classification_institution_type' => $body['ClassificationInsType'],
-                'classification_product_type' => $body['ClassificationProdType'],
-                'credit_score_details' => $body['CREDIT_SCORE_DETAILS'],
+        // Extract confidence score (handle both structures)
+        $confidenceScore = (float) (
+            data_get($header, 'SEARCHRESULTLIST.SEARCHRESULTITEM.CONFIDENCESCORE')
+            ?: data_get($header, 'SEARCHRESULTLIST.SEARCHRESULTITEM.0.CONFIDENCESCORE')
+        );
+
+        return DB::transaction(function () use ($body, $header, $customer, $setting, $responseBody, $confidenceScore) {
+
+            $update_data = [
+                'summary_of_performance' => data_get($body, 'SummaryOfPerformance'),
+                'bvn_report_detail' => data_get($body, 'ReportDetailBVN'),
+                'contact_history' => data_get($body, 'ContactHistory'),
+                'address_history' => data_get($body, 'AddressHistory'),
+                'classification_institution_type' => data_get($body, 'ClassificationInsType'),
+                'classification_product_type' => data_get($body, 'ClassificationProdType'),
+                'credit_score_details' => data_get($body, 'CREDIT_SCORE_DETAILS'),
                 'credit_facilities_summary' => [
-                    'credit' => $body['CREDIT_NANO_SUMMARY'],
-                    'mf_credit' => $body['MFCREDIT_NANO_SUMMARY'],
-                    'mg_credit' => $body['MGCREDIT_NANO_SUMMARY']
+                    'credit' => data_get($body, 'CREDIT_NANO_SUMMARY', []),
+                    'mf_credit' => data_get($body, 'MFCREDIT_NANO_SUMMARY', []),
+                    'mg_credit' => data_get($body, 'MGCREDIT_NANO_SUMMARY', []),
                 ],
-                'profile_details' => $body['NANO_CONSUMER_PROFILE'],
+                'profile_details' => data_get($body, 'NANO_CONSUMER_PROFILE', []),
                 'header' => $header,
-            ]);
+                'body' => $responseBody,
+                'confidence_score' => $confidenceScore,
+            ];
 
-            // Get the total number of delinquencies
-            $numberOfDelinquencies = (
-                (int) $crc->credit_facilities_summary['credit']['SUMMARY']['NO_OF_DELINQCREDITFACILITIES'] +
-                (int) $crc->credit_facilities_summary['mf_credit']['SUMMARY']['NO_OF_DELINQCREDITFACILITIES'] +
-                (int) $crc->credit_facilities_summary['mg_credit']['SUMMARY']['NO_OF_DELINQCREDITFACILITIES']
+            // ✅ Use proper matching key
+            // $crc = $customer->crc()->updateOrCreate(
+            //     ['customer_id' => $customer->id],
+            //     $update_data
+            // );
+
+            $crc = $customer->crc()->updateOrCreate(
+                ['customer_id' => $customer->id],
+                $update_data
             );
 
-            // Update the total number of delinquencies
+            // Compute delinquency totals safely
+            $noDelinqCredit = (int) data_get($crc->credit_facilities_summary, 'credit.SUMMARY.NO_OF_DELINQCREDITFACILITIES', 0);
+            $noDelinqMf = (int) data_get($crc->credit_facilities_summary, 'mf_credit.SUMMARY.NO_OF_DELINQCREDITFACILITIES', 0);
+            $noDelinqMg = (int) data_get($crc->credit_facilities_summary, 'mg_credit.SUMMARY.NO_OF_DELINQCREDITFACILITIES', 0);
+
+            $numberOfDelinquencies = $noDelinqCredit + $noDelinqMf + $noDelinqMg;
+
             $crc->update([
-                'total_delinquencies' => $numberOfDelinquencies
+                'total_delinquencies' => $numberOfDelinquencies,
+                'passes_recent_check' => $this->passesCheckPerformance($crc, $setting) ? 'YES' : 'NO',
             ]);
 
-            if ($this->passesCheckPerformance($crc, $setting)) {
-                $crc->update([
-                    'passes_recent_check' => 'YES',
-                ]);
-            } else {
-                $crc->update([
-                    'passes_recent_check' => 'NO',
-                ]);
-            }
-
             $customer->forceFill([
-                'crc_check_last_requested_at' => now()
+                'crc_check_last_requested_at' => now(),
             ])->save();
 
             return $crc;
         });
     }
+
+
+
 
     /**
      * Perform CRC check based on application
@@ -326,6 +455,12 @@ class Crc implements CreditBureau
             if (
                 isset($crc->credit_score_details) &&
                 ((int) $crc->credit_score_details['CREDIT_SCORE_SUMMARY']['CREDIT_SCORE'] < $minimumBureauCreditScore)
+            ) {
+                return false;
+            }
+
+            if (
+                isset($crc->confidence_score) && ((int) $crc->confidence_score < $minimumBureauCreditScore)
             ) {
                 return false;
             }
