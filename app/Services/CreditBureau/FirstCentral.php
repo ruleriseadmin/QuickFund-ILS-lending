@@ -235,7 +235,13 @@ class FirstCentral implements CreditBureau
                 'total_delinquencies' => $numberOfDelinquencies
             ]);
 
-            if ($this->passesCheckPerformance($firstCentral, $setting)) {
+            $performanceCheck = $this->passesCheckPerformance($firstCentral, $setting);
+
+            if ((int) $numberOfDelinquencies < 1) {
+                $firstCentral->update([
+                    'passes_recent_check' => 'YES',
+                ]);
+            } elseif ($performanceCheck) {
                 $firstCentral->update([
                     'passes_recent_check' => 'YES',
                 ]);

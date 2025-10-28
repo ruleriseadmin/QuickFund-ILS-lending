@@ -411,10 +411,11 @@ class Crc implements CreditBureau
             $noDelinqMg = (int) data_get($crc->credit_facilities_summary, 'mg_credit.SUMMARY.NO_OF_DELINQCREDITFACILITIES', 0);
 
             $numberOfDelinquencies = $noDelinqCredit + $noDelinqMf + $noDelinqMg;
+            $performanceCheck = $this->passesCheckPerformance($crc, $setting);
 
             $crc->update([
                 'total_delinquencies' => $numberOfDelinquencies,
-                'passes_recent_check' => $this->passesCheckPerformance($crc, $setting) ? 'YES' : 'NO',
+                'passes_recent_check' => ((int) $numberOfDelinquencies < 1 ? 'YES' : ($performanceCheck ? "YES" : "NO")),
             ]);
 
             $customer->forceFill([
